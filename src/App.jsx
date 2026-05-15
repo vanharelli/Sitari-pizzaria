@@ -299,6 +299,19 @@ export default function App() {
       </div>
 
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/20 px-6 py-4 flex items-center relative">
+        <div className="sm:hidden">
+          <h1 className="leading-none">
+            <div className="text-lg font-black tracking-tighter">
+              SITARI{" "}
+              <span className="text-black/70 font-black text-xs ml-0.5 tracking-widest uppercase">
+                Pizzaria
+              </span>
+            </div>
+            <div className="text-[#25c522ff] font-black text-xs tracking-widest uppercase mt-1">
+              Delivery
+            </div>
+          </h1>
+        </div>
         <div className="hidden sm:flex items-center gap-3">
           <img
             src="/logosemfundo.png"
