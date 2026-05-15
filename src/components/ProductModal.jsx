@@ -20,7 +20,7 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
     setSelectedExtras([]);
     setAdded(false);
     setFlavorsCount(1);
-    setFlavorIds([pizza?.id].filter(Boolean));
+    setFlavorIds(pizza?.id ? [pizza.id, 0, 0, 0] : []);
   }, [pizza?.id]);
 
   const flavorCandidates = useMemo(() => {
@@ -41,62 +41,68 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
 
   const baseId = pizza?.id;
   const safeFlavorIds = useMemo(() => {
-    const initial = Array.isArray(flavorIds) ? flavorIds : [];
-    const withBase = baseId ? [baseId, ...initial.filter((id) => id !== baseId)] : initial;
-    return withBase.filter(Boolean);
+    if (!baseId) return [];
+    const current = Array.isArray(flavorIds) ? flavorIds : [];
+    const next = [baseId, ...current.slice(1)];
+    while (next.length < 4) next.push(0);
+    return next.slice(0, 4);
   }, [flavorIds, baseId]);
 
   const selectedFlavors = useMemo(() => {
     return safeFlavorIds
+      .slice(0, flavorsCount)
       .map((id) => flavorsById.get(id))
       .filter(Boolean);
-  }, [safeFlavorIds, flavorsById]);
+  }, [safeFlavorIds, flavorsCount, flavorsById]);
 
   const setFlavorsCountSafe = (next) => {
     const n = Math.max(1, Math.min(4, Number(next) || 1));
     setFlavorsCount(n);
     setFlavorIds((prev) => {
+      if (!baseId) return [];
       const current = Array.isArray(prev) ? prev : [];
-      const withBase = baseId ? [baseId, ...current.filter((id) => id !== baseId)] : current;
-      const trimmed = withBase.slice(0, n);
-      return trimmed.length > 0 ? trimmed : [baseId].filter(Boolean);
-    });
-  };
+      const slots = [baseId, ...current.slice(1)];
+      while (slots.length < 4) slots.push(0);
+      slots[0] = baseId;
+      for (let i = n; i < 4; i += 1) slots[i] = 0;
 
-  const toggleFlavor = (id) => {
-    if (!id) return;
-    if (id === baseId) return;
-    setFlavorIds((prev) => {
-      const current = Array.isArray(prev) ? prev : [];
-      const withBase = baseId ? [baseId, ...current.filter((x) => x !== baseId)] : current;
-      const exists = withBase.includes(id);
-      if (exists) {
-        return withBase.filter((x) => x !== id);
+      for (let i = 1; i < n; i += 1) {
+        const id = slots[i];
+        if (!id) continue;
+        if (id === baseId) slots[i] = 0;
+        for (let j = i + 1; j < n; j += 1) {
+          if (slots[j] === id) slots[j] = 0;
+        }
       }
-      if (withBase.length >= flavorsCount) return withBase;
-      return [...withBase, id];
+
+      return slots;
     });
   };
 
-  const removeFlavor = (id) => {
-    if (!id) return;
-    if (id === baseId) return;
-    setFlavorIds((prev) => {
-      const current = Array.isArray(prev) ? prev : [];
-      const withBase = baseId ? [baseId, ...current.filter((x) => x !== baseId)] : current;
-      return withBase.filter((x) => x !== id);
-    });
-  };
+  const setFlavorAtIndex = (index, nextId) => {
+    if (!baseId) return;
+    if (index === 0) return;
 
-  const fillFlavor = (id) => {
-    if (!id) return;
-    if (id === baseId) return;
+    const id = nextId ? Number(nextId) : 0;
     setFlavorIds((prev) => {
       const current = Array.isArray(prev) ? prev : [];
-      const withBase = baseId ? [baseId, ...current.filter((x) => x !== baseId)] : current;
-      if (withBase.includes(id)) return withBase;
-      if (withBase.length >= flavorsCount) return withBase;
-      return [...withBase, id];
+      const slots = [baseId, ...current.slice(1)];
+      while (slots.length < 4) slots.push(0);
+      slots[0] = baseId;
+
+      if (!id) {
+        slots[index] = 0;
+      } else if (id === baseId) {
+        slots[index] = 0;
+      } else {
+        for (let i = 1; i < flavorsCount; i += 1) {
+          if (i !== index && slots[i] === id) slots[i] = 0;
+        }
+        slots[index] = id;
+      }
+
+      for (let i = flavorsCount; i < 4; i += 1) slots[i] = 0;
+      return slots;
     });
   };
 
@@ -171,7 +177,7 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto no-scrollbar p-5 sm:p-6 space-y-5 sm:space-y-6">
           <div>
             <h2 className="text-2xl font-black text-black">{pizza.name}</h2>
             <p className="text-black/60 text-sm">{pizza.description}</p>
@@ -204,6 +210,9 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
           <div className="space-y-2">
             <p className="text-[10px] font-bold text-black/30 uppercase tracking-widest">
               Sabores
+            </p>
+            <p className="text-black/60 text-xs font-bold">
+              Quantos sabores será?
             </p>
             <div className="grid grid-cols-4 gap-2">
               {[1, 2, 3, 4].map((n) => (
@@ -247,48 +256,23 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
                               (isBase ? pizza.name : "Escolha um sabor abaixo")}
                           </div>
                         </div>
-                        {!isBase && slotId && (
-                          <button
-                            onClick={() => removeFlavor(slotId)}
-                            className="shrink-0 px-3 py-2 rounded-xl bg-white border border-red-500/20 text-black/70 font-black text-xs"
+                        {!isBase && (
+                          <select
+                            value={slotId && slotId !== baseId ? String(slotId) : ""}
+                            onChange={(e) => setFlavorAtIndex(idx, e.target.value)}
+                            className="shrink-0 max-w-[52%] rounded-xl bg-white border border-red-500/20 px-3 py-2 text-xs font-black text-black/70 outline-none focus:border-[#25c522ff]"
                           >
-                            Remover
-                          </button>
+                            <option value="">Selecionar</option>
+                            {flavorCandidates
+                              .filter((p) => p.id !== baseId)
+                              .map((p) => (
+                                <option key={p.id} value={String(p.id)}>
+                                  {p.name}
+                                </option>
+                              ))}
+                          </select>
                         )}
                       </div>
-                    );
-                  })}
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {flavorCandidates.map((p) => {
-                    const isBase = p.id === baseId;
-                    const isSelected = safeFlavorIds.includes(p.id);
-                    const isFull =
-                      !isSelected && selectedFlavors.length >= flavorsCount;
-                    return (
-                      <button
-                        key={p.id}
-                        onClick={() =>
-                          isSelected ? removeFlavor(p.id) : fillFlavor(p.id)
-                        }
-                        disabled={isBase || isFull}
-                        className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${
-                          isSelected
-                            ? "bg-[#25c522ff]/15 border-[#25c522ff]/70 text-black"
-                            : "bg-black/5 border-red-500/20 text-black/70"
-                        } ${isBase || isFull ? "opacity-60" : ""}`}
-                      >
-                        <div className="font-black text-sm whitespace-normal break-words leading-tight">
-                          {p.name}
-                        </div>
-                        <div className="text-[10px] text-black/50">
-                          {isBase
-                            ? "Sabor principal"
-                            : isSelected
-                              ? "Selecionado (toque para remover)"
-                              : "Toque para selecionar"}
-                        </div>
-                      </button>
                     );
                   })}
                 </div>
