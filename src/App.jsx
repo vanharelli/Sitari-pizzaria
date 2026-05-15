@@ -465,9 +465,6 @@ export default function App() {
                     >
                       <MapPin size={16} /> Abrir no Maps
                     </button>
-                    <div className="px-5 py-3 rounded-2xl bg-black/5 border border-red-500/20 text-black font-bold flex items-center gap-2">
-                      <Clock size={16} /> {SITE_INFO.hoursLabel}
-                    </div>
                   </div>
                 </div>
               </div>
