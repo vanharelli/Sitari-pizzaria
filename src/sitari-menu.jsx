@@ -1,5 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Check } from "lucide-react";
 
 export const COUPONS = {
   BEMVINDO20: {
@@ -63,7 +64,7 @@ function validateCoupon(subtotal, method, couponCode) {
   const normalizedMethod = String(method || "").trim();
 
   if (!code) {
-    return { ok: false, code: "", reason: "Digite um cupom." };
+    return { ok: false, code: "", reason: "Cupom inválido." };
   }
   if (!coupon) {
     return { ok: false, code, reason: "Cupom inválido." };
@@ -123,150 +124,128 @@ export function calculateDiscount(subtotal, method, couponCode) {
   return 0;
 }
 
-export function GlassCoupon({ subtotal, method, appliedCode, onApply }) {
-  const [input, setInput] = useState(appliedCode || "");
-  const [alert, setAlert] = useState(null);
+export function findBestCoupon(subtotal, method) {
+  const candidates = Object.keys(COUPONS).map((code) => {
+    const discount = calculateDiscount(subtotal, method, code);
+    return { code, discount };
+  });
 
-  const activeCode = normalizeCode(appliedCode);
-  const inputCode = normalizeCode(input);
-
-  const evaluation = useMemo(() => {
-    const ok = validateCoupon(subtotal, method, inputCode);
-    const discount = ok.ok ? calculateDiscount(subtotal, method, inputCode) : 0;
-    return { ...ok, discount };
-  }, [subtotal, method, inputCode]);
-
-  const activeDiscount = useMemo(() => {
-    if (!activeCode) return 0;
-    return calculateDiscount(subtotal, method, activeCode);
-  }, [subtotal, method, activeCode]);
-
-  return (
-    <div
-      className={`rounded-2xl border p-5 shadow-sm backdrop-blur-xl ${
-        activeCode
-          ? "bg-white/70 border-yellow-400/70"
-          : "bg-white/60 border-red-500/20"
-      }`}
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">
-            Cupom
-          </p>
-          <p className="text-black font-black text-lg leading-tight">
-            Aplicar desconto
-          </p>
-        </div>
-        {activeCode && activeDiscount > 0 && (
-          <div className="text-right">
-            <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">
-              Economizou
-            </p>
-            <p className="font-black text-base" style={{ color: "#25c522ff" }}>
-              - {formatBRL(activeDiscount)}
-            </p>
-          </div>
-        )}
-      </div>
-
-      <div className="mt-4 flex gap-2">
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Ex: PIZZA10"
-          className={`flex-1 bg-black/5 rounded-xl px-4 py-3 text-sm font-bold outline-none border ${
-            activeCode ? "border-yellow-400/60" : "border-red-500/20"
-          } focus:border-[#25c522ff]`}
-        />
-        <button
-          onClick={() => {
-            if (!inputCode) {
-              onApply({ code: "", discount: 0 });
-              setAlert({
-                type: "info",
-                message: "Cupom removido.",
-                key: Date.now(),
-              });
-              return;
-            }
-
-            if (!evaluation.ok) {
-              onApply({ code: "", discount: 0 });
-              setAlert({
-                type: "error",
-                message: evaluation.reason || "Não foi possível aplicar o cupom.",
-                key: Date.now(),
-              });
-              return;
-            }
-
-            onApply({ code: evaluation.code, discount: evaluation.discount });
-            setAlert({
-              type: "success",
-              message: `Cupom ${evaluation.code} aplicado!`,
-              key: Date.now(),
-            });
-          }}
-          className="px-5 py-3 rounded-xl bg-black text-white font-black"
-        >
-          Aplicar
-        </button>
-      </div>
-
-      <AnimatePresence mode="popLayout">
-        {alert && (
-          <motion.div
-            key={alert.key}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            className={`mt-3 rounded-xl border px-4 py-3 text-sm font-bold ${
-              alert.type === "success"
-                ? "bg-[#25c522ff]/10 border-[#25c522ff]/40 text-black"
-                : alert.type === "info"
-                  ? "bg-black/5 border-black/10 text-black/70"
-                  : "bg-purple-500/10 border-purple-500/30 text-black"
-            }`}
-          >
-            {alert.message}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {!evaluation.ok &&
-          typeof evaluation.minSubtotal === "number" &&
-          typeof evaluation.progress === "number" && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mt-3"
-            >
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-bold text-black/60">
-                  {evaluation.reason}
-                </p>
-                <p className="text-[10px] font-bold text-black/40 whitespace-nowrap">
-                  {formatBRL(subtotal)} / {formatBRL(evaluation.minSubtotal)}
-                </p>
-              </div>
-              <div className="mt-2 h-2 rounded-full bg-black/10 overflow-hidden border border-purple-500/20">
-                <div
-                  className="h-full rounded-full"
-                  style={{
-                    width: `${Math.round(evaluation.progress * 100)}%`,
-                    background:
-                      "linear-gradient(90deg, rgba(168,85,247,1) 0%, rgba(236,72,153,1) 100%)",
-                    boxShadow: "0 0 18px rgba(168,85,247,0.55)",
-                  }}
-                />
-              </div>
-            </motion.div>
-          )}
-      </AnimatePresence>
-    </div>
+  const best = candidates.reduce(
+    (acc, c) => (c.discount > acc.discount ? c : acc),
+    { code: "", discount: 0 }
   );
+
+  if (!best.code || best.discount <= 0) return null;
+
+  const coupon = COUPONS[best.code];
+  const headline =
+    coupon.type === "percent"
+      ? `${coupon.value}% de DESCONTO LIBERADO`
+      : `${formatBRL(coupon.value)} OFF LIBERADO`;
+
+  return {
+    code: best.code,
+    discount: best.discount,
+    headline,
+  };
 }
 
+export function getNewlyUnlockedThresholdCoupon(prevSubtotal, subtotal) {
+  const thresholdCodes = Object.entries(COUPONS)
+    .filter(([, c]) => typeof c.minSubtotal === "number")
+    .sort((a, b) => a[1].minSubtotal - b[1].minSubtotal)
+    .map(([code, c]) => ({ code, minSubtotal: c.minSubtotal }));
+
+  for (const { code, minSubtotal } of thresholdCodes) {
+    if (prevSubtotal < minSubtotal && subtotal >= minSubtotal) {
+      return code;
+    }
+  }
+  return "";
+}
+
+export function PromotionPopup({ open, coupon, onActivate, onClose }) {
+  const [isConfirmed, setIsConfirmed] = useState(false);
+
+  useEffect(() => {
+    if (!open) setIsConfirmed(false);
+  }, [open]);
+
+  if (!coupon) return null;
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[60] flex items-center justify-center p-6"
+        >
+          <div
+            className="absolute inset-0 bg-black/60"
+            style={{ backdropFilter: "blur(40px)" }}
+            onClick={() => onClose?.()}
+          />
+          <motion.div
+            initial={{ y: 18, scale: 0.98, opacity: 0 }}
+            animate={{ y: 0, scale: 1, opacity: 1 }}
+            exit={{ y: 18, scale: 0.98, opacity: 0 }}
+            className="relative w-full max-w-md rounded-3xl border border-yellow-400/70 bg-black/55 p-6 text-white shadow-[0_0_60px_rgba(168,85,247,0.55)]"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-white font-black text-lg">
+                  VOCÊ GANHOU UM PRESENTE! 🎁
+                </p>
+                <p className="text-white/80 font-bold text-sm mt-2">
+                  Cupom {coupon.code}
+                </p>
+                <p className="text-white font-black text-2xl mt-2">
+                  {coupon.headline}
+                </p>
+                <p className="mt-3 font-black text-base" style={{ color: "#25c522ff" }}>
+                  Economia: - {formatBRL(coupon.discount)}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6">
+              <AnimatePresence mode="popLayout">
+                {isConfirmed ? (
+                  <motion.div
+                    key="confirmed"
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    className="w-full py-4 rounded-2xl bg-[#25c522ff] text-black font-black text-lg flex items-center justify-center gap-3"
+                  >
+                    <Check size={22} /> Desconto ativado
+                  </motion.div>
+                ) : (
+                  <motion.button
+                    key="activate"
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      onActivate?.(coupon.code);
+                      setIsConfirmed(true);
+                      window.setTimeout(() => onClose?.(), 900);
+                    }}
+                    className="w-full py-4 rounded-2xl font-black text-lg text-black"
+                    style={{
+                      backgroundColor: "#25c522ff",
+                      boxShadow: "0 0 40px rgba(37,197,34,0.25)",
+                      animation: "sitariPulse 1.2s ease-in-out infinite",
+                    }}
+                  >
+                    ATIVAR DESCONTO AGORA
+                  </motion.button>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}

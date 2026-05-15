@@ -17,7 +17,12 @@ import { PizzaCard } from "./components/PizzaCard";
 import { ProductModal } from "./components/ProductModal";
 import { useCart } from "./hooks/useCart";
 import { getPizzaImage, PIZZAS, SITE_INFO } from "./data/menu";
-import { calculateDiscount, GlassCoupon } from "./sitari-menu";
+import {
+  calculateDiscount,
+  findBestCoupon,
+  getNewlyUnlockedThresholdCoupon,
+  PromotionPopup,
+} from "./sitari-menu";
 import { formatWhatsAppMessage } from "./utils/formatWhatsAppMessage";
 
 export default function App() {
@@ -31,11 +36,14 @@ export default function App() {
   const [cardType, setCardType] = useState("Crédito");
   const [changeFor, setChangeFor] = useState("");
   const [couponCode, setCouponCode] = useState("");
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoOffer, setPromoOffer] = useState(null);
   const [customer, setCustomer] = useState({
     name: "",
     whatsapp: "",
   });
   const mostOrderedScrollRef = useRef(null);
+  const promoMetaRef = useRef({ lastShownCode: "", lastSubtotal: 0 });
   const { items, addItem, incrementItem, decrementItem, removeItem, total } =
     useCart();
   const [deliveryAddress, setDeliveryAddress] = useState({
@@ -66,6 +74,7 @@ export default function App() {
     ? calculateDiscount(total, payment, couponCode)
     : 0;
   const finalTotal = Math.max(0, total - couponDiscount);
+  const bestOffer = findBestCoupon(total, payment);
 
   const filtered =
     category === "Todas" ? PIZZAS : PIZZAS.filter((p) => p.category === category);
@@ -111,6 +120,54 @@ export default function App() {
       { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
     );
   };
+
+  const openPromotion = (offer) => {
+    if (!offer) return;
+    setPromoOffer(offer);
+    setPromoOpen(true);
+    promoMetaRef.current.lastShownCode = offer.code;
+  };
+
+  useEffect(() => {
+    if (!cartOpen) return;
+    if (items.length === 0) return;
+    if (promoOpen) return;
+    if (!bestOffer || bestOffer.discount <= 0) return;
+    if (couponCode && couponDiscount > 0) return;
+    if (bestOffer.code === couponCode) return;
+    if (bestOffer.code === promoMetaRef.current.lastShownCode) return;
+    openPromotion(bestOffer);
+  }, [cartOpen, items.length, promoOpen, bestOffer, couponCode, couponDiscount]);
+
+  useEffect(() => {
+    if (cartOpen) return;
+    promoMetaRef.current.lastShownCode = "";
+  }, [cartOpen]);
+
+  useEffect(() => {
+    const prev = promoMetaRef.current.lastSubtotal || 0;
+    promoMetaRef.current.lastSubtotal = total;
+
+    if (items.length === 0) return;
+    if (promoOpen) return;
+    if (couponCode && couponDiscount > 0) return;
+    if (!bestOffer || bestOffer.discount <= 0) return;
+
+    const unlocked = getNewlyUnlockedThresholdCoupon(prev, total);
+    if (!unlocked) return;
+    if (bestOffer.code === promoMetaRef.current.lastShownCode) return;
+    if (bestOffer.code === couponCode) return;
+
+    openPromotion(bestOffer);
+  }, [
+    total,
+    payment,
+    items.length,
+    promoOpen,
+    bestOffer,
+    couponCode,
+    couponDiscount,
+  ]);
 
   const recordOrder = () => {
     try {
@@ -206,7 +263,7 @@ export default function App() {
 
   return (
     <div
-      className="min-h-screen text-black font-sans selection:bg-[#25c522ff]/20 relative"
+      className="min-h-screen text-black font-sans selection:bg-[#25c522ff]/20 relative overflow-x-hidden"
       style={{
         backgroundImage: "url(/background2.jpeg)",
         backgroundSize: "cover",
@@ -559,7 +616,7 @@ export default function App() {
 
                 {checkoutStep === 1 ? (
                   <>
-                    <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-4">
                       {items.map((item) => {
                         const qty = item.qty || 1;
                         const unit =
@@ -637,7 +694,7 @@ export default function App() {
                   </>
                 ) : (
                   <>
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                    <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-6">
                       <div className="space-y-2">
                         <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">
                           Seus dados
@@ -811,13 +868,6 @@ export default function App() {
                           />
                         </div>
                       )}
-
-                      <GlassCoupon
-                        subtotal={total}
-                        method={payment}
-                        appliedCode={couponCode}
-                        onApply={({ code }) => setCouponCode(code)}
-                      />
                     </div>
 
                     <div className="p-6 bg-white border-t border-red-500/20 space-y-3">
@@ -921,6 +971,15 @@ export default function App() {
           </>
         )}
       </AnimatePresence>
+
+      <PromotionPopup
+        open={promoOpen}
+        coupon={promoOffer}
+        onActivate={(code) => {
+          setCouponCode(String(code || "").toUpperCase());
+        }}
+        onClose={() => setPromoOpen(false)}
+      />
 
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
