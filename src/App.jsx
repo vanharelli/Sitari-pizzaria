@@ -332,18 +332,27 @@ export default function App() {
                       { label: "Sábado", hours: "18:00–22:30", index: 6 },
                     ].map((d) => {
                       const isToday = d.index === todayIndex;
-                      const dayClass = isToday
-                        ? "font-black text-[#25c522ff]"
-                        : "font-bold text-black";
-                      const hoursClass = isToday
-                        ? "font-black text-[#25c522ff]"
-                        : "text-black/60";
+                      const isClosed = d.hours === "Fechado";
+                      const dayClass = isClosed
+                        ? "font-black text-red-500"
+                        : isToday
+                          ? "font-black text-[#25c522ff]"
+                          : "font-bold text-black";
+                      const hoursClass = isClosed
+                        ? "font-black text-red-500"
+                        : isToday
+                          ? "font-black text-[#25c522ff]"
+                          : "text-black/60";
                       return (
                         <div
                           key={d.index}
                           className={`flex ${
                             isToday ? "justify-center gap-3" : "justify-between"
-                          } ${isToday ? "rounded-xl bg-[#25c522ff]/10 px-2 py-1" : ""}`}
+                          } ${
+                            isToday
+                              ? `rounded-xl ${isClosed ? "bg-red-500/10" : "bg-[#25c522ff]/10"} px-2 py-1`
+                              : ""
+                          }`}
                         >
                           <span className={dayClass}>{d.label}</span>
                           <span className={hoursClass}>{d.hours}</span>
