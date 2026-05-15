@@ -559,17 +559,17 @@ export default function App() {
                         return (
                           <div
                             key={item.cartId}
-                            className="flex justify-between items-center bg-black/5 p-4 rounded-xl border border-red-500/20"
+                            className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-black/5 p-4 rounded-xl border border-red-500/20"
                           >
-                            <div className="flex gap-4 items-center">
+                            <div className="flex gap-4 items-center min-w-0">
                               <img
                                 src={item.imageUrl || getPizzaImage(null)}
                                 alt={item.name}
-                                className="h-12 w-12 object-contain"
+                                className="h-12 w-12 object-contain shrink-0"
                                 draggable="false"
                               />
-                              <div>
-                                <p className="font-bold text-sm text-black">
+                              <div className="min-w-0">
+                                <p className="font-bold text-sm text-black truncate">
                                   {item.name}
                                 </p>
                                 <p className="text-[10px] text-black/50">
@@ -580,28 +580,30 @@ export default function App() {
                                 </p>
                               </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                              <span className="font-bold text-sm text-black">
+                            <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-3">
+                              <span className="font-bold text-sm text-black whitespace-nowrap">
                                 R$ {lineTotal.toFixed(2)}
                               </span>
-                              <button
-                                onClick={() => decrementItem(item.cartId)}
-                                className="w-9 h-9 rounded-xl bg-white border border-red-500/20 text-black flex items-center justify-center"
-                              >
-                                <Minus size={16} />
-                              </button>
-                              <button
-                                onClick={() => incrementItem(item.cartId)}
-                                className="w-9 h-9 rounded-xl bg-[#25c522ff] text-black flex items-center justify-center"
-                              >
-                                <Plus size={16} />
-                              </button>
-                              <button
-                                onClick={() => removeItem(item.cartId)}
-                                className="w-9 h-9 rounded-xl bg-white border border-red-500/20 text-black/60 flex items-center justify-center"
-                              >
-                                <X size={14} />
-                              </button>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                  onClick={() => decrementItem(item.cartId)}
+                                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-red-500/20 text-black flex items-center justify-center"
+                                >
+                                  <Minus size={16} />
+                                </button>
+                                <button
+                                  onClick={() => incrementItem(item.cartId)}
+                                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#25c522ff] text-black flex items-center justify-center"
+                                >
+                                  <Plus size={16} />
+                                </button>
+                                <button
+                                  onClick={() => removeItem(item.cartId)}
+                                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white border border-red-500/20 text-black/60 flex items-center justify-center"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
                             </div>
                           </div>
                         );
