@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 
 function buildItemKey(item) {
+  const flavorsKey = (item.flavors || [])
+    .map((f) => String(f || "").trim())
+    .filter(Boolean)
+    .sort()
+    .join("|");
   const extrasKey = (item.extras || [])
     .map((e) => `${e.name}:${Number(e.price).toFixed(2)}`)
     .sort()
     .join("|");
-  return `${item.name}|${item.sizeKey || item.size || ""}|${extrasKey}`;
+  return `${item.name}|${item.sizeKey || item.size || ""}|${flavorsKey}|${extrasKey}`;
 }
 
 export function useCart() {
@@ -65,7 +70,8 @@ export function useCart() {
   const total = items.reduce(
     (s, i) =>
       s +
-      (i.qty || 1) * (i.price + i.extras.reduce((es, e) => es + e.price, 0)),
+      (i.qty || 1) *
+        (i.price + (i.extras || []).reduce((es, e) => es + e.price, 0)),
     0
   );
 

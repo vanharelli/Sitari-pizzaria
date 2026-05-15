@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { getPizzaImage } from "../data/menu";
@@ -8,10 +8,75 @@ const SIZE_LABEL = {
   G: "Grande",
 };
 
-export function ProductModal({ pizza, onClose, onAdd }) {
+export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
   const [sizeKey, setSizeKey] = useState("");
+  const [flavorsCount, setFlavorsCount] = useState(1);
+  const [flavorIds, setFlavorIds] = useState([]);
   const [selectedExtras, setSelectedExtras] = useState([]);
   const [added, setAdded] = useState(false);
+
+  useEffect(() => {
+    setSizeKey("");
+    setSelectedExtras([]);
+    setAdded(false);
+    setFlavorsCount(1);
+    setFlavorIds([pizza?.id].filter(Boolean));
+  }, [pizza?.id]);
+
+  const flavorCandidates = useMemo(() => {
+    if (!pizza) return [];
+    if (!Array.isArray(allPizzas) || allPizzas.length === 0) return [pizza];
+    return allPizzas
+      .filter((p) => p && p.category === pizza.category)
+      .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  }, [allPizzas, pizza]);
+
+  const flavorsById = useMemo(() => {
+    const m = new Map();
+    flavorCandidates.forEach((p) => {
+      if (p?.id) m.set(p.id, p);
+    });
+    return m;
+  }, [flavorCandidates]);
+
+  const baseId = pizza?.id;
+  const safeFlavorIds = useMemo(() => {
+    const initial = Array.isArray(flavorIds) ? flavorIds : [];
+    const withBase = baseId ? [baseId, ...initial.filter((id) => id !== baseId)] : initial;
+    return withBase.filter(Boolean);
+  }, [flavorIds, baseId]);
+
+  const selectedFlavors = useMemo(() => {
+    return safeFlavorIds
+      .map((id) => flavorsById.get(id))
+      .filter(Boolean);
+  }, [safeFlavorIds, flavorsById]);
+
+  const setFlavorsCountSafe = (next) => {
+    const n = Math.max(1, Math.min(4, Number(next) || 1));
+    setFlavorsCount(n);
+    setFlavorIds((prev) => {
+      const current = Array.isArray(prev) ? prev : [];
+      const withBase = baseId ? [baseId, ...current.filter((id) => id !== baseId)] : current;
+      const trimmed = withBase.slice(0, n);
+      return trimmed.length > 0 ? trimmed : [baseId].filter(Boolean);
+    });
+  };
+
+  const toggleFlavor = (id) => {
+    if (!id) return;
+    if (id === baseId) return;
+    setFlavorIds((prev) => {
+      const current = Array.isArray(prev) ? prev : [];
+      const withBase = baseId ? [baseId, ...current.filter((x) => x !== baseId)] : current;
+      const exists = withBase.includes(id);
+      if (exists) {
+        return withBase.filter((x) => x !== id);
+      }
+      if (withBase.length >= flavorsCount) return withBase;
+      return [...withBase, id];
+    });
+  };
 
   const toggleExtra = (extra) =>
     setSelectedExtras((prev) =>
@@ -20,16 +85,25 @@ export function ProductModal({ pizza, onClose, onAdd }) {
         : [...prev, extra]
     );
 
-  const totalPrice =
-    (pizza.sizes?.[sizeKey] ?? 0) +
-    selectedExtras.reduce((s, e) => s + e.price, 0);
+  const basePrice = selectedFlavors.reduce((max, p) => {
+    const price = p?.sizes?.[sizeKey] ?? 0;
+    return price > max ? price : max;
+  }, 0);
+
+  const totalPrice = basePrice + selectedExtras.reduce((s, e) => s + e.price, 0);
 
   const handleAdd = () => {
+    const flavorsLabel = selectedFlavors.map((p) => p.name).filter(Boolean);
+    const finalFlavorsCount = Math.max(1, Math.min(4, flavorsCount));
+    const displayName =
+      finalFlavorsCount > 1 ? `Pizza ${finalFlavorsCount} Sabores` : pizza.name;
     onAdd({
-      name: pizza.name,
+      name: displayName,
+      flavorsCount: finalFlavorsCount,
+      flavors: flavorsLabel.length > 0 ? flavorsLabel : [pizza.name],
       size: SIZE_LABEL[sizeKey] ?? sizeKey,
       sizeKey,
-      price: pizza.sizes?.[sizeKey] ?? 0,
+      price: basePrice,
       extras: selectedExtras,
       imageUrl: getPizzaImage(pizza),
     });
@@ -81,7 +155,11 @@ export function ProductModal({ pizza, onClose, onAdd }) {
             <p className="text-black/60 text-sm">{pizza.description}</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-2">
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold text-black/30 uppercase tracking-widest">
+              Tamanho
+            </p>
+            <div className="grid grid-cols-2 gap-2">
             {["M", "G"].map((s) => (
               <button
                 key={s}
@@ -98,6 +176,62 @@ export function ProductModal({ pizza, onClose, onAdd }) {
                 </div>
               </button>
             ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-[10px] font-bold text-black/30 uppercase tracking-widest">
+              Sabores
+            </p>
+            <div className="grid grid-cols-4 gap-2">
+              {[1, 2, 3, 4].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setFlavorsCountSafe(n)}
+                  className={`py-3 rounded-xl border font-black text-sm transition-all ${
+                    flavorsCount === n
+                      ? "bg-[#25c522ff]/20 border-[#25c522ff] text-black"
+                      : "bg-black/5 border-red-500/20 text-black/60"
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+
+            {flavorsCount > 1 && (
+              <>
+                <p className="text-xs font-bold text-black/60">
+                  Selecione {flavorsCount} sabores ({selectedFlavors.length}/
+                  {flavorsCount})
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {flavorCandidates.map((p) => {
+                    const isBase = p.id === baseId;
+                    const isSelected = safeFlavorIds.includes(p.id);
+                    const isFull =
+                      !isSelected && selectedFlavors.length >= flavorsCount;
+                    return (
+                      <button
+                        key={p.id}
+                        onClick={() => toggleFlavor(p.id)}
+                        disabled={isBase || isFull}
+                        className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${
+                          isSelected
+                            ? "bg-[#25c522ff]/15 border-[#25c522ff]/70 text-black"
+                            : "bg-black/5 border-red-500/20 text-black/70"
+                        } ${isBase || isFull ? "opacity-60" : ""}`}
+                      >
+                        <div className="font-black text-sm">{p.name}</div>
+                        <div className="text-[10px] text-black/50">
+                          {isBase ? "Sabor principal" : "Toque para selecionar"}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
 
           {(pizza.extras ?? []).length > 0 && (
@@ -134,16 +268,26 @@ export function ProductModal({ pizza, onClose, onAdd }) {
           </div>
           <button
             onClick={handleAdd}
-            disabled={!sizeKey || added}
+            disabled={
+              !sizeKey ||
+              added ||
+              (flavorsCount > 1 && selectedFlavors.length !== flavorsCount)
+            }
             className={`w-full py-4 rounded-2xl font-bold text-white transition-all ${
-              !sizeKey
+              !sizeKey || (flavorsCount > 1 && selectedFlavors.length !== flavorsCount)
                 ? "bg-black/10 text-black/40"
                 : added
                   ? "bg-green-600"
                   : "bg-[#25c522ff] text-black shadow-[0_0_20px_rgba(37,197,34,0.35)]"
             }`}
           >
-            {!sizeKey ? "Escolha o tamanho" : added ? "Adicionado!" : "Adicionar ao Pedido"}
+            {!sizeKey
+              ? "Escolha o tamanho"
+              : flavorsCount > 1 && selectedFlavors.length !== flavorsCount
+                ? `Selecione ${flavorsCount} sabores`
+                : added
+                  ? "Adicionado!"
+                  : "Adicionar ao Pedido"}
           </button>
         </div>
       </motion.div>

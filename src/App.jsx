@@ -602,6 +602,7 @@ export default function App() {
         {selectedPizza && (
           <ProductModal
             pizza={selectedPizza}
+            allPizzas={PIZZAS}
             onClose={() => setSelectedPizza(null)}
             onAdd={addItem}
           />
@@ -665,6 +666,12 @@ export default function App() {
                                 <p className="font-bold text-sm text-black truncate">
                                   {item.name}
                                 </p>
+                                {Array.isArray(item.flavors) &&
+                                  item.flavors.length > 1 && (
+                                    <p className="text-[10px] text-black/50 truncate">
+                                      Sabores: {item.flavors.join(" / ")}
+                                    </p>
+                                  )}
                                 <p className="text-[10px] text-black/50">
                                   Tamanho {item.size}
                                 </p>
