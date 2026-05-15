@@ -15,21 +15,22 @@ import {
 import { CategoryFilter } from "./components/CategoryFilter";
 import { PizzaCard } from "./components/PizzaCard";
 import { ProductModal } from "./components/ProductModal";
-import { useCart } from "./hooks/useCart";
-import { getPizzaImage, PIZZAS, SITE_INFO } from "./data/menu";
+import { useCart } from "./logic/useCart";
+import { getPizzaImage, PIZZAS, SITE_INFO } from "./logic/menu";
 import {
   calculateDiscount,
   findBestCoupon,
   getNewlyUnlockedThresholdCoupon,
-  PromotionPopup,
-} from "./sitari-menu";
-import { formatWhatsAppMessage } from "./utils/formatWhatsAppMessage";
+} from "./logic/promotions";
+import { PromotionPopup } from "./components/PromotionPopup";
+import { formatWhatsAppMessage } from "./logic/formatWhatsAppMessage";
 
 export default function App() {
   const [category, setCategory] = useState("Todas");
   const [selectedPizza, setSelectedPizza] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState(1);
+  const [headerActive, setHeaderActive] = useState(false);
   const [hoursOpen, setHoursOpen] = useState(false);
   const [fulfillment, setFulfillment] = useState("Entrega");
   const [payment, setPayment] = useState("PIX");
@@ -281,6 +282,19 @@ export default function App() {
     return () => window.cancelAnimationFrame(raf);
   }, []);
 
+  useEffect(() => {
+    const onScroll = () => {
+      setHeaderActive(window.scrollY > 8);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!headerActive) setHoursOpen(false);
+  }, [headerActive]);
+
   return (
     <div
       className="min-h-screen text-black font-sans selection:bg-[#25c522ff]/20 relative overflow-x-hidden"
@@ -301,7 +315,16 @@ export default function App() {
         <div className="absolute top-[25%] -right-[10%] w-[35%] h-[35%] bg-[#25c522ff]/8 blur-[130px] rounded-full" />
       </div>
 
-      <header className="z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/40 px-6 py-4 flex items-center relative">
+      <motion.header
+        initial={false}
+        animate={headerActive ? { opacity: 1, y: 0 } : { opacity: 0, y: -18 }}
+        transition={{ duration: 0.22, ease: "easeOut" }}
+        className={`z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/40 px-6 py-4 flex items-center ${
+          headerActive
+            ? "fixed top-0 left-0 right-0"
+            : "absolute top-0 left-0 right-0 pointer-events-none"
+        }`}
+      >
         <div className="sm:hidden">
           <h1 className="leading-none">
             <div className="text-base font-black tracking-tighter">
@@ -415,7 +438,7 @@ export default function App() {
         >
           <Instagram size={20} />
         </a>
-      </header>
+      </motion.header>
 
       <main className="relative z-10 pb-32">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 lg:pr-28 py-8">
