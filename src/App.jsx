@@ -285,14 +285,17 @@ export default function App() {
     <div
       className="min-h-screen text-black font-sans selection:bg-[#25c522ff]/20 relative overflow-x-hidden"
       style={{
-        backgroundImage: "url(/background2.jpeg?v=2)",
+        backgroundImage: "url(/back3.avif?v=1)",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",
       }}
     >
-      <div className="absolute inset-0 bg-white/70 pointer-events-none" />
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ backdropFilter: "blur(6px)", background: "rgba(255,255,255,0.42)" }}
+      />
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-[10%] -left-[10%] w-[45%] h-[45%] bg-[#25c522ff]/12 blur-[120px] rounded-full" />
         <div className="absolute top-[25%] -right-[10%] w-[35%] h-[35%] bg-[#25c522ff]/8 blur-[130px] rounded-full" />
