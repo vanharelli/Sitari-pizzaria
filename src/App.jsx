@@ -70,6 +70,7 @@ export default function App() {
   };
 
   const status = getBusinessStatus();
+  const todayIndex = new Date().getDay();
   const couponDiscount = couponCode
     ? calculateDiscount(total, payment, couponCode)
     : 0;
@@ -281,8 +282,11 @@ export default function App() {
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/20 px-6 py-4 flex items-center relative">
         <div>
           <h1 className="leading-none">
-            <div className="text-xl font-black tracking-tighter">
-              SITARI <span className="text-black/70 font-black text-sm ml-1 tracking-widest uppercase">Pizzaria</span>
+            <div className="text-lg sm:text-xl font-black tracking-tighter">
+              SITARI{" "}
+              <span className="text-black/70 font-black text-xs sm:text-sm ml-0.5 sm:ml-1 tracking-widest uppercase">
+                Pizzaria
+              </span>
             </div>
             <div className="text-[#25c522ff] font-black text-xs tracking-widest uppercase mt-1">
               Delivery
@@ -318,34 +322,34 @@ export default function App() {
                     Horário de funcionamento
                   </p>
                   <div className="mt-3 space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="font-bold text-black">Segunda</span>
-                      <span className="text-black/60">Fechado</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-bold text-black">Terça</span>
-                      <span className="text-black/60">18:00–22:30</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-bold text-black">Quarta</span>
-                      <span className="text-black/60">18:00–22:30</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-bold text-black">Quinta</span>
-                      <span className="text-black/60">18:00–22:30</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-bold text-black">Sexta</span>
-                      <span className="text-black/60">18:00–22:30</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-bold text-black">Sábado</span>
-                      <span className="text-black/60">18:00–22:30</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-bold text-black">Domingo</span>
-                      <span className="text-black/60">18:00–22:30</span>
-                    </div>
+                    {[
+                      { label: "Domingo", hours: "18:00–22:30", index: 0 },
+                      { label: "Segunda", hours: "Fechado", index: 1 },
+                      { label: "Terça", hours: "18:00–22:30", index: 2 },
+                      { label: "Quarta", hours: "18:00–22:30", index: 3 },
+                      { label: "Quinta", hours: "18:00–22:30", index: 4 },
+                      { label: "Sexta", hours: "18:00–22:30", index: 5 },
+                      { label: "Sábado", hours: "18:00–22:30", index: 6 },
+                    ].map((d) => {
+                      const isToday = d.index === todayIndex;
+                      const dayClass = isToday
+                        ? "font-black text-[#25c522ff]"
+                        : "font-bold text-black";
+                      const hoursClass = isToday
+                        ? "font-black text-[#25c522ff]"
+                        : "text-black/60";
+                      return (
+                        <div
+                          key={d.index}
+                          className={`flex ${
+                            isToday ? "justify-center gap-3" : "justify-between"
+                          } ${isToday ? "rounded-xl bg-[#25c522ff]/10 px-2 py-1" : ""}`}
+                        >
+                          <span className={dayClass}>{d.label}</span>
+                          <span className={hoursClass}>{d.hours}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </motion.div>
               )}
