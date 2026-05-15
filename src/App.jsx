@@ -60,13 +60,47 @@ export default function App() {
   const filtered =
     category === "Todas" ? PIZZAS : PIZZAS.filter((p) => p.category === category);
 
-  const mapsQuery = `${SITE_INFO.addressLine1}, ${SITE_INFO.addressLine2}`;
-  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    mapsQuery
-  )}`;
+  const destinationLat = SITE_INFO.google?.location?.lat;
+  const destinationLng = SITE_INFO.google?.location?.lng;
+  const destination =
+    typeof destinationLat === "number" && typeof destinationLng === "number"
+      ? `${destinationLat},${destinationLng}`
+      : `${SITE_INFO.addressLine1}, ${SITE_INFO.addressLine2}`;
+
+  const mapsPlaceUrl = SITE_INFO.google?.placeUrl;
   const mapsEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(
-    mapsQuery
-  )}&output=embed`;
+    destination
+  )}&z=17&output=embed`;
+
+  const mapsDirectionsBaseUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+    destination
+  )}&travelmode=driving`;
+
+  const openDirectionsToSitari = () => {
+    const w = window.open("about:blank", "_blank");
+    const fallback = mapsDirectionsBaseUrl;
+
+    if (!w) {
+      window.open(fallback);
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      w.location.href = fallback;
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const origin = `${pos.coords.latitude},${pos.coords.longitude}`;
+        w.location.href = `${fallback}&origin=${encodeURIComponent(origin)}`;
+      },
+      () => {
+        w.location.href = fallback;
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
+    );
+  };
 
   const mostOrderedMeta = [
     {
@@ -374,7 +408,7 @@ export default function App() {
                   referrerPolicy="no-referrer-when-downgrade"
                 />
                 <button
-                  onClick={() => window.open(mapsUrl)}
+                  onClick={() => window.open(mapsPlaceUrl || mapsDirectionsBaseUrl)}
                   className="absolute top-3 left-3 right-3 flex items-center justify-between gap-3 rounded-2xl bg-white/90 border border-red-500/20 px-4 py-3 text-left shadow-sm"
                 >
                   <div className="min-w-0">
@@ -415,8 +449,8 @@ export default function App() {
                 <p className="text-black/80 text-sm">{SITE_INFO.addressLine1}</p>
                 <p className="text-black/60 text-sm">{SITE_INFO.addressLine2}</p>
                 <div className="flex flex-wrap gap-3 mt-5">
-                  <button
-                    onClick={() => window.open(mapsUrl)}
+                <button
+                    onClick={openDirectionsToSitari}
                     className="px-5 py-3 rounded-2xl bg-black/5 border border-red-500/20 text-black font-bold flex items-center gap-2"
                   >
                     <MapPin size={16} /> Abrir no Maps
@@ -440,7 +474,7 @@ export default function App() {
               {SITE_INFO.review.author}, via {SITE_INFO.review.source}
             </p>
             <button
-              onClick={() => window.open(mapsUrl)}
+              onClick={() => window.open(mapsPlaceUrl || mapsDirectionsBaseUrl)}
               className="mt-5 px-5 py-3 rounded-2xl bg-black/5 border border-red-500/20 text-black font-bold"
             >
               Ver no Google Maps

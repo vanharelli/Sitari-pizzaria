@@ -19,6 +19,12 @@ export const SITE_INFO = {
   hoursLabel: "De terça a domingo • 18h às 22h30",
   orderUrl: "https://sitaripizzaria.saipos.com/home",
   google: {
+    placeUrl:
+      "https://www.google.com/maps/place/Sit%C3%A1ri+Pizzaria+-+Guar%C3%A1/@-15.8424298,-47.9694567,17z/data=!3m1!4b1!4m6!3m5!1s0x935a2f9fe0a9e9e9:0x3150f9fbd0ce4c02!8m2!3d-15.8424298!4d-47.9668818!16s%2Fg%2F11s1w52bfh?entry=ttu&g_ep=EgoyMDI2MDUxMi4wIKXMDSoASAFQAw%3D%3D",
+    location: {
+      lat: -15.8424298,
+      lng: -47.9668818,
+    },
     rating: 4.9,
   },
   review: {
