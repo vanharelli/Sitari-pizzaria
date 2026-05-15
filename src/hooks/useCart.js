@@ -47,6 +47,17 @@ export function useCart() {
       prev.map((i) => (i.cartId === cartId ? { ...i, qty: (i.qty || 1) + 1 } : i))
     );
 
+  const decrementItem = (cartId) =>
+    setItems((prev) =>
+      prev
+        .map((i) => {
+          if (i.cartId !== cartId) return i;
+          const nextQty = (i.qty || 1) - 1;
+          return { ...i, qty: nextQty };
+        })
+        .filter((i) => (i.qty || 1) > 0)
+    );
+
   const removeItem = (cartId) =>
     setItems((prev) => prev.filter((i) => i.cartId !== cartId));
   const clearCart = () => setItems([]);
@@ -58,5 +69,13 @@ export function useCart() {
     0
   );
 
-  return { items, addItem, incrementItem, removeItem, clearCart, total };
+  return {
+    items,
+    addItem,
+    incrementItem,
+    decrementItem,
+    removeItem,
+    clearCart,
+    total,
+  };
 }

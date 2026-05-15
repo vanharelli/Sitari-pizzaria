@@ -5,6 +5,7 @@ import {
   ExternalLink,
   Instagram,
   MapPin,
+  Minus,
   Phone,
   Plus,
   ShoppingBag,
@@ -33,7 +34,8 @@ export default function App() {
     whatsapp: "",
   });
   const mostOrderedScrollRef = useRef(null);
-  const { items, addItem, incrementItem, removeItem, total } = useCart();
+  const { items, addItem, incrementItem, decrementItem, removeItem, total } =
+    useCart();
   const [deliveryAddress, setDeliveryAddress] = useState({
     street: "",
     number: "",
@@ -582,6 +584,12 @@ export default function App() {
                               <span className="font-bold text-sm text-black">
                                 R$ {lineTotal.toFixed(2)}
                               </span>
+                              <button
+                                onClick={() => decrementItem(item.cartId)}
+                                className="w-9 h-9 rounded-xl bg-white border border-red-500/20 text-black flex items-center justify-center"
+                              >
+                                <Minus size={16} />
+                              </button>
                               <button
                                 onClick={() => incrementItem(item.cartId)}
                                 className="w-9 h-9 rounded-xl bg-[#25c522ff] text-black flex items-center justify-center"
