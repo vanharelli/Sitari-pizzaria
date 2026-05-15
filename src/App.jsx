@@ -131,6 +131,7 @@ export default function App() {
 
   useEffect(() => {
     if (!cartOpen) return;
+    if (checkoutStep !== 2) return;
     if (items.length === 0) return;
     if (promoOpen) return;
     if (!bestOffer || bestOffer.discount <= 0) return;
@@ -138,7 +139,15 @@ export default function App() {
     if (bestOffer.code === couponCode) return;
     if (bestOffer.code === promoMetaRef.current.lastShownCode) return;
     openPromotion(bestOffer);
-  }, [cartOpen, items.length, promoOpen, bestOffer, couponCode, couponDiscount]);
+  }, [
+    cartOpen,
+    checkoutStep,
+    items.length,
+    promoOpen,
+    bestOffer,
+    couponCode,
+    couponDiscount,
+  ]);
 
   useEffect(() => {
     if (cartOpen) return;
@@ -146,9 +155,17 @@ export default function App() {
   }, [cartOpen]);
 
   useEffect(() => {
+    if (checkoutStep === 2) return;
+    if (!promoOpen) return;
+    setPromoOpen(false);
+  }, [checkoutStep, promoOpen]);
+
+  useEffect(() => {
     const prev = promoMetaRef.current.lastSubtotal || 0;
     promoMetaRef.current.lastSubtotal = total;
 
+    if (!cartOpen) return;
+    if (checkoutStep !== 2) return;
     if (items.length === 0) return;
     if (promoOpen) return;
     if (couponCode && couponDiscount > 0) return;
@@ -163,6 +180,8 @@ export default function App() {
   }, [
     total,
     payment,
+    cartOpen,
+    checkoutStep,
     items.length,
     promoOpen,
     bestOffer,
