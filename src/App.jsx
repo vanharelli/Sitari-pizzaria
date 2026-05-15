@@ -298,7 +298,7 @@ export default function App() {
         <div className="absolute top-[25%] -right-[10%] w-[35%] h-[35%] bg-[#25c522ff]/8 blur-[130px] rounded-full" />
       </div>
 
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/20 px-6 py-4 flex items-center relative">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/40 px-6 py-4 flex items-center relative">
         <div className="sm:hidden">
           <h1 className="leading-none">
             <div className="text-lg font-black tracking-tighter">
