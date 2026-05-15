@@ -16,7 +16,7 @@ export function PizzaCard({ pizza, onSelect, sizeKey }) {
       className="relative rounded-2xl overflow-hidden bg-white border border-red-500/20 shadow-sm"
     >
       <div
-        className="h-32 flex items-center justify-center relative"
+        className="h-40 sm:h-44 flex items-center justify-center relative"
         style={{
           background: `radial-gradient(circle, ${pizza.glowColor}20, transparent)`,
         }}
@@ -24,14 +24,20 @@ export function PizzaCard({ pizza, onSelect, sizeKey }) {
         <img
           src={getPizzaImage(pizza)}
           alt={pizza.name}
-          className="h-24 w-24 object-contain drop-shadow-2xl"
+          className="absolute inset-0 h-full w-full object-cover"
           draggable="false"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
         <div
           className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[9px] font-black"
           style={{ background: pizza.tagColor, color: "#000" }}
         >
           {pizza.tag}
+        </div>
+        <div className="absolute bottom-3 left-3 right-3">
+          <p className="text-white font-black text-base leading-tight drop-shadow">
+            {pizza.name}
+          </p>
         </div>
       </div>
       <div className="p-3">
