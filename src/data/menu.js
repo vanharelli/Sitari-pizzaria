@@ -14,6 +14,7 @@ export const SITE_INFO = {
     "Chegamos trazendo a essência da tradicional pizza brasileira. Sitári (σιτάρι) em grego significa Trigo, a base de tudo.",
   phoneDisplay: "(61) 99883-8898",
   whatsappDigits: "5561998838898",
+  instagramUrl: "https://www.instagram.com/sitaripizzaria",
   addressLine1: "QE36 Comércio Local A, Loja 35",
   addressLine2: "Guará 2, Brasília/DF, 71065-613",
   hoursLabel: "De terça a domingo • 18h às 22h30",

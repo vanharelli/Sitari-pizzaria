@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
 
+function buildItemKey(item) {
+  const extrasKey = (item.extras || [])
+    .map((e) => `${e.name}:${Number(e.price).toFixed(2)}`)
+    .sort()
+    .join("|");
+  return `${item.name}|${item.sizeKey || item.size || ""}|${extrasKey}`;
+}
+
 export function useCart() {
   const [items, setItems] = useState(() => {
     try {
@@ -14,15 +22,41 @@ export function useCart() {
   }, [items]);
 
   const addItem = (item) =>
-    setItems((prev) => [...prev, { ...item, cartId: Date.now() + Math.random() }]);
+    setItems((prev) => {
+      const itemKey = buildItemKey(item);
+      const existingIndex = prev.findIndex((i) => i.itemKey === itemKey);
+      if (existingIndex === -1) {
+        return [
+          ...prev,
+          {
+            ...item,
+            itemKey,
+            qty: 1,
+            cartId: Date.now() + Math.random(),
+          },
+        ];
+      }
+
+      return prev.map((i, idx) =>
+        idx === existingIndex ? { ...i, qty: (i.qty || 1) + 1 } : i
+      );
+    });
+
+  const incrementItem = (cartId) =>
+    setItems((prev) =>
+      prev.map((i) => (i.cartId === cartId ? { ...i, qty: (i.qty || 1) + 1 } : i))
+    );
+
   const removeItem = (cartId) =>
     setItems((prev) => prev.filter((i) => i.cartId !== cartId));
   const clearCart = () => setItems([]);
 
   const total = items.reduce(
-    (s, i) => s + i.price + i.extras.reduce((es, e) => es + e.price, 0),
+    (s, i) =>
+      s +
+      (i.qty || 1) * (i.price + i.extras.reduce((es, e) => es + e.price, 0)),
     0
   );
 
-  return { items, addItem, removeItem, clearCart, total };
+  return { items, addItem, incrementItem, removeItem, clearCart, total };
 }

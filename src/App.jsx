@@ -3,8 +3,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Clock,
   ExternalLink,
+  Instagram,
   MapPin,
   Phone,
+  Plus,
   ShoppingBag,
   Star,
   X,
@@ -31,7 +33,7 @@ export default function App() {
     whatsapp: "",
   });
   const mostOrderedScrollRef = useRef(null);
-  const { items, addItem, removeItem, total } = useCart();
+  const { items, addItem, incrementItem, removeItem, total } = useCart();
   const [deliveryAddress, setDeliveryAddress] = useState({
     street: "",
     number: "",
@@ -203,13 +205,15 @@ export default function App() {
         <div className="absolute top-[25%] -right-[10%] w-[35%] h-[35%] bg-[#25c522ff]/8 blur-[130px] rounded-full" />
       </div>
 
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/20 px-6 py-4 flex justify-between items-center relative">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/20 px-6 py-4 flex items-center relative">
         <div>
-          <h1 className="text-xl font-black tracking-tighter">
-            SITARI{" "}
-            <span className="text-[#25c522ff] font-medium text-xs ml-1 tracking-widest uppercase">
+          <h1 className="leading-none">
+            <div className="text-xl font-black tracking-tighter">
+              SITARI <span className="text-black/70 font-black text-sm ml-1 tracking-widest uppercase">Pizzaria</span>
+            </div>
+            <div className="text-[#25c522ff] font-black text-xs tracking-widest uppercase mt-1">
               Delivery
-            </span>
+            </div>
           </h1>
         </div>
 
@@ -276,50 +280,38 @@ export default function App() {
           </div>
         </div>
 
-        <button
-          onClick={() => {
-            setHoursOpen(false);
-            setCheckoutStep(1);
-            setCartOpen(true);
-          }}
-          className="relative p-3 rounded-2xl bg-white/70 border border-red-500/20 shadow-sm"
+        <a
+          href={SITE_INFO.instagramUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="absolute right-6 top-1/2 -translate-y-1/2 w-11 h-11 rounded-2xl bg-white/80 border border-red-500/20 shadow-sm flex items-center justify-center text-black hover:bg-white"
         >
-          <ShoppingBag size={20} />
-          {items.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#25c522ff] text-black rounded-full text-[10px] font-bold flex items-center justify-center">
-              {items.length}
-            </span>
-          )}
-        </button>
+          <Instagram size={20} />
+        </a>
       </header>
 
-      <main className="relative z-10 px-6 py-8 pb-32">
-        <div className="mb-10">
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tighter leading-none mb-2">
-            {SITE_INFO.intro.title}
-          </h2>
-          <p className="text-black/70 font-medium">{SITE_INFO.tagline}</p>
-          <p className="text-black/60 text-sm mt-3">{SITE_INFO.intro.text}</p>
-          <p className="text-black text-sm mt-4 font-bold">
-            {SITE_INFO.intro.promo}
-          </p>
-          <div className="flex flex-wrap gap-3 mt-6">
-            <button
-              onClick={() => window.open(SITE_INFO.orderUrl)}
-              className="px-5 py-3 rounded-2xl bg-[#25c522ff] text-black font-bold flex items-center gap-2"
-            >
-              <ExternalLink size={16} /> VER CARDÁPIO OFICIAL
-            </button>
-            <a
-              href={`tel:${SITE_INFO.phoneDisplay.replace(/[^\d+]/g, "")}`}
-              className="px-5 py-3 rounded-2xl bg-white text-black border border-red-500/30 font-bold flex items-center gap-2"
-            >
-              <Phone size={16} /> {SITE_INFO.phoneDisplay}
-            </a>
+      <main className="relative z-10 pb-32">
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 lg:pr-28 py-8">
+          <div className="mb-10">
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tighter leading-none mb-2">
+              {SITE_INFO.intro.title}
+            </h2>
+            <p className="text-black/70 font-medium">{SITE_INFO.tagline}</p>
+            <p className="text-black/60 text-sm mt-3">{SITE_INFO.intro.text}</p>
+            <p className="text-black text-sm mt-4 font-bold">
+              {SITE_INFO.intro.promo}
+            </p>
+            <div className="flex flex-wrap gap-3 mt-6">
+              <a
+                href={`tel:${SITE_INFO.phoneDisplay.replace(/[^\d+]/g, "")}`}
+                className="px-5 py-3 rounded-2xl bg-white text-black border border-red-500/30 font-bold flex items-center gap-2"
+              >
+                <Phone size={16} /> {SITE_INFO.phoneDisplay}
+              </a>
+            </div>
           </div>
-        </div>
 
-        <div className="rounded-2xl bg-white/80 border border-red-500/20 p-6 shadow-sm">
+          <div className="rounded-2xl bg-white/80 border border-red-500/20 p-6 shadow-sm">
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">
@@ -380,9 +372,9 @@ export default function App() {
           </div>
         </div>
 
-        <CategoryFilter active={category} onChange={setCategory} />
+          <CategoryFilter active={category} onChange={setCategory} />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
           {filtered.map((pizza) => (
             <PizzaCard
               key={pizza.id}
@@ -390,95 +382,98 @@ export default function App() {
               onSelect={setSelectedPizza}
             />
           ))}
-        </div>
+          </div>
 
-        <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <div className="rounded-2xl bg-white/80 border border-red-500/20 p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <MapPin className="text-[#25c522ff]" size={18} />
-              <h3 className="text-black font-black text-lg">Onde estamos</h3>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="relative rounded-2xl overflow-hidden border border-red-500/20 bg-white shadow-sm">
-                <iframe
-                  title="Mapa Sitari Pizzaria"
-                  src={mapsEmbedUrl}
-                  className="w-full h-48 lg:h-full"
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                />
-                <button
-                  onClick={() => window.open(mapsPlaceUrl || mapsDirectionsBaseUrl)}
-                  className="absolute top-3 left-3 right-3 flex items-center justify-between gap-3 rounded-2xl bg-white/90 border border-red-500/20 px-4 py-3 text-left shadow-sm"
-                >
-                  <div className="min-w-0">
-                    <p className="text-black font-black text-sm truncate">
-                      Sitári Pizzaria
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <div className="flex items-center gap-0.5">
-                        {[1, 2, 3, 4, 5].map((i) => (
-                          <Star
-                            key={i}
-                            size={14}
-                            className={`${
-                              i <= Math.round(SITE_INFO.google?.rating || 0)
-                                ? "text-[#25c522ff] fill-[#25c522ff]"
-                                : "text-black/30"
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-black/60 text-xs font-bold">
-                        {SITE_INFO.google?.rating?.toFixed
-                          ? SITE_INFO.google.rating.toFixed(1).replace(".", ",")
-                          : "—"}{" "}
-                        no Google
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <MapPin className="text-[#25c522ff]" size={18} />
-                    <span className="text-black font-black text-xs">
-                      Ver
-                    </span>
-                  </div>
-                </button>
+          <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="rounded-2xl bg-white/80 border border-red-500/20 p-6 shadow-sm">
+              <div className="flex items-center gap-2 mb-3">
+                <MapPin className="text-[#25c522ff]" size={18} />
+                <h3 className="text-black font-black text-lg">Onde estamos</h3>
               </div>
-              <div>
-                <p className="text-black/80 text-sm">{SITE_INFO.addressLine1}</p>
-                <p className="text-black/60 text-sm">{SITE_INFO.addressLine2}</p>
-                <div className="flex flex-wrap gap-3 mt-5">
-                <button
-                    onClick={openDirectionsToSitari}
-                    className="px-5 py-3 rounded-2xl bg-black/5 border border-red-500/20 text-black font-bold flex items-center gap-2"
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="relative rounded-2xl overflow-hidden border border-red-500/20 bg-white shadow-sm">
+                  <iframe
+                    title="Mapa Sitari Pizzaria"
+                    src={mapsEmbedUrl}
+                    className="w-full h-48 lg:h-full"
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                  />
+                  <button
+                    onClick={() =>
+                      window.open(mapsPlaceUrl || mapsDirectionsBaseUrl)
+                    }
+                    className="absolute top-3 left-3 right-3 flex items-center justify-between gap-3 rounded-2xl bg-white/90 border border-red-500/20 px-4 py-3 text-left shadow-sm"
                   >
-                    <MapPin size={16} /> Abrir no Maps
+                    <div className="min-w-0">
+                      <p className="text-black font-black text-sm truncate">
+                        Sitári Pizzaria
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-0.5">
+                          {[1, 2, 3, 4, 5].map((i) => (
+                            <Star
+                              key={i}
+                              size={14}
+                              className={`${
+                                i <= Math.round(SITE_INFO.google?.rating || 0)
+                                  ? "text-[#25c522ff] fill-[#25c522ff]"
+                                  : "text-black/30"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-black/60 text-xs font-bold">
+                          {SITE_INFO.google?.rating?.toFixed
+                            ? SITE_INFO.google.rating
+                                .toFixed(1)
+                                .replace(".", ",")
+                            : "—"}{" "}
+                          no Google
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <MapPin className="text-[#25c522ff]" size={18} />
+                      <span className="text-black font-black text-xs">Ver</span>
+                    </div>
                   </button>
-                  <div className="px-5 py-3 rounded-2xl bg-black/5 border border-red-500/20 text-black font-bold flex items-center gap-2">
-                    <Clock size={16} /> {SITE_INFO.hoursLabel}
+                </div>
+                <div>
+                  <p className="text-black/80 text-sm">{SITE_INFO.addressLine1}</p>
+                  <p className="text-black/60 text-sm">{SITE_INFO.addressLine2}</p>
+                  <div className="flex flex-wrap gap-3 mt-5">
+                    <button
+                      onClick={openDirectionsToSitari}
+                      className="px-5 py-3 rounded-2xl bg-black/5 border border-red-500/20 text-black font-bold flex items-center gap-2"
+                    >
+                      <MapPin size={16} /> Abrir no Maps
+                    </button>
+                    <div className="px-5 py-3 rounded-2xl bg-black/5 border border-red-500/20 text-black font-bold flex items-center gap-2">
+                      <Clock size={16} /> {SITE_INFO.hoursLabel}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="rounded-2xl bg-white/80 border border-red-500/20 p-6 shadow-sm">
-            <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">
-              Avaliações
-            </p>
-            <p className="text-black/80 text-sm mt-3 leading-relaxed">
-              “{SITE_INFO.review.text}”
-            </p>
-            <p className="text-black/50 text-sm mt-4">
-              {SITE_INFO.review.author}, via {SITE_INFO.review.source}
-            </p>
-            <button
-              onClick={() => window.open(mapsPlaceUrl || mapsDirectionsBaseUrl)}
-              className="mt-5 px-5 py-3 rounded-2xl bg-black/5 border border-red-500/20 text-black font-bold"
-            >
-              Ver no Google Maps
-            </button>
+            <div className="rounded-2xl bg-white/80 border border-red-500/20 p-6 shadow-sm">
+              <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">
+                Avaliações
+              </p>
+              <p className="text-black/80 text-sm mt-3 leading-relaxed">
+                “{SITE_INFO.review.text}”
+              </p>
+              <p className="text-black/50 text-sm mt-4">
+                {SITE_INFO.review.author}, via {SITE_INFO.review.source}
+              </p>
+              <button
+                onClick={() => window.open(mapsPlaceUrl || mapsDirectionsBaseUrl)}
+                className="mt-5 px-5 py-3 rounded-2xl bg-black/5 border border-red-500/20 text-black font-bold"
+              >
+                Ver no Google Maps
+              </button>
+            </div>
           </div>
         </div>
       </main>
@@ -552,40 +547,57 @@ export default function App() {
                 {checkoutStep === 1 ? (
                   <>
                     <div className="flex-1 overflow-y-auto p-6 space-y-4">
-                      {items.map((item) => (
-                        <div
-                          key={item.cartId}
-                          className="flex justify-between items-center bg-black/5 p-4 rounded-xl border border-red-500/20"
-                        >
-                          <div className="flex gap-4 items-center">
-                      <img
-                        src={item.imageUrl || getPizzaImage(null)}
-                        alt={item.name}
-                        className="h-12 w-12 object-contain"
-                        draggable="false"
-                      />
-                            <div>
-                              <p className="font-bold text-sm text-black">
-                                {item.name}
-                              </p>
-                              <p className="text-[10px] text-black/50">
-                                Tamanho {item.size}
-                              </p>
+                      {items.map((item) => {
+                        const qty = item.qty || 1;
+                        const unit =
+                          item.price +
+                          (item.extras || []).reduce((s, e) => s + e.price, 0);
+                        const lineTotal = unit * qty;
+
+                        return (
+                          <div
+                            key={item.cartId}
+                            className="flex justify-between items-center bg-black/5 p-4 rounded-xl border border-red-500/20"
+                          >
+                            <div className="flex gap-4 items-center">
+                              <img
+                                src={item.imageUrl || getPizzaImage(null)}
+                                alt={item.name}
+                                className="h-12 w-12 object-contain"
+                                draggable="false"
+                              />
+                              <div>
+                                <p className="font-bold text-sm text-black">
+                                  {item.name}
+                                </p>
+                                <p className="text-[10px] text-black/50">
+                                  Tamanho {item.size}
+                                </p>
+                                <p className="text-[10px] text-black/50">
+                                  Quantidade {qty}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="font-bold text-sm text-black">
+                                R$ {lineTotal.toFixed(2)}
+                              </span>
+                              <button
+                                onClick={() => incrementItem(item.cartId)}
+                                className="w-9 h-9 rounded-xl bg-[#25c522ff] text-black flex items-center justify-center"
+                              >
+                                <Plus size={16} />
+                              </button>
+                              <button
+                                onClick={() => removeItem(item.cartId)}
+                                className="w-9 h-9 rounded-xl bg-white border border-red-500/20 text-black/60 flex items-center justify-center"
+                              >
+                                <X size={14} />
+                              </button>
                             </div>
                           </div>
-                          <div className="flex items-center gap-4">
-                            <span className="font-bold text-sm text-black">
-                              R$ {item.price.toFixed(2)}
-                            </span>
-                            <button
-                              onClick={() => removeItem(item.cartId)}
-                              className="text-black/30"
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     <div className="p-6 bg-white border-t border-red-500/20 space-y-4">
                       <div className="flex justify-between items-center">

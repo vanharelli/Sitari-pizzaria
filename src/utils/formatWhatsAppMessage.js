@@ -16,10 +16,13 @@ export function formatWhatsAppMessage(items, addressOrOptions, maybeOptions) {
 
   let total = 0;
   items.forEach((item, i) => {
-    const sub = item.price + item.extras.reduce((s, e) => s + e.price, 0);
+    const qty = item.qty || 1;
+    const unit = item.price + item.extras.reduce((s, e) => s + e.price, 0);
+    const sub = unit * qty;
     total += sub;
     lines.push(`*${i + 1}. ${item.name}*`);
     lines.push(`   📐 Tamanho: ${item.size}`);
+    lines.push(`   🔢 Quantidade: ${qty}`);
     if (item.extras.length > 0) {
       lines.push("   ➕ Adicionais:");
       item.extras.forEach((e) =>
