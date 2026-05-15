@@ -6,6 +6,7 @@ import { getPizzaImage } from "../data/menu";
 const SIZE_LABEL = {
   M: "Média",
   G: "Grande",
+  U: "Unidade",
 };
 
 export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
@@ -15,13 +16,22 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
   const [selectedExtras, setSelectedExtras] = useState([]);
   const [added, setAdded] = useState(false);
 
+  const sizeOptions = useMemo(() => {
+    const keys = Object.keys(pizza?.sizes || {});
+    if (keys.length > 0) return keys;
+    return ["M", "G"];
+  }, [pizza?.sizes]);
+
+  const isDrink = pizza?.category === "Bebidas";
+
   useEffect(() => {
-    setSizeKey("");
+    const defaultSizeKey = sizeOptions.length === 1 ? sizeOptions[0] : "";
+    setSizeKey(defaultSizeKey);
     setSelectedExtras([]);
     setAdded(false);
     setFlavorsCount(1);
     setFlavorIds(pizza?.id ? [pizza.id, 0, 0, 0] : []);
-  }, [pizza?.id]);
+  }, [pizza?.id, sizeOptions]);
 
   const flavorCandidates = useMemo(() => {
     if (!pizza) return [];
@@ -188,7 +198,7 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
               Tamanho
             </p>
             <div className="grid grid-cols-2 gap-2">
-            {["M", "G"].map((s) => (
+            {sizeOptions.map((s) => (
               <button
                 key={s}
                 onClick={() => setSizeKey(s)}
@@ -198,7 +208,7 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
                     : "bg-black/5 border-red-500/20 text-black/60"
                 }`}
               >
-                <div className="text-xs font-bold">{SIZE_LABEL[s]}</div>
+                <div className="text-xs font-bold">{SIZE_LABEL[s] ?? s}</div>
                 <div className="text-[10px]">
                   R${(pizza.sizes?.[s] ?? 0).toFixed(2).replace(".", ",")}
                 </div>
@@ -207,78 +217,80 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
             </div>
           </div>
 
-          <div className="space-y-2">
-            <p className="text-[10px] font-bold text-black/30 uppercase tracking-widest">
-              Sabores
-            </p>
-            <p className="text-black/60 text-xs font-bold">
-              Quantos sabores será?
-            </p>
-            <div className="grid grid-cols-4 gap-2">
-              {[1, 2, 3, 4].map((n) => (
-                <button
-                  key={n}
-                  onClick={() => setFlavorsCountSafe(n)}
-                  className={`py-3 rounded-xl border font-black text-sm transition-all ${
-                    flavorsCount === n
-                      ? "bg-[#25c522ff]/20 border-[#25c522ff] text-black"
-                      : "bg-black/5 border-red-500/20 text-black/60"
-                  }`}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
+          {!isDrink && (
+            <div className="space-y-2">
+              <p className="text-[10px] font-bold text-black/30 uppercase tracking-widest">
+                Sabores
+              </p>
+              <p className="text-black/60 text-xs font-bold">
+                Quantos sabores será?
+              </p>
+              <div className="grid grid-cols-4 gap-2">
+                {[1, 2, 3, 4].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setFlavorsCountSafe(n)}
+                    className={`py-3 rounded-xl border font-black text-sm transition-all ${
+                      flavorsCount === n
+                        ? "bg-[#25c522ff]/20 border-[#25c522ff] text-black"
+                        : "bg-black/5 border-red-500/20 text-black/60"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
 
-            {flavorsCount > 1 && (
-              <>
-                <p className="text-xs font-bold text-black/60">
-                  Selecione {flavorsCount} sabores ({selectedFlavors.length}/
-                  {flavorsCount})
-                </p>
-                <div className="space-y-2">
-                  {Array.from({ length: flavorsCount }).map((_, idx) => {
-                    const slotLabel = `Sabor ${idx + 1}`;
-                    const slotId = safeFlavorIds[idx];
-                    const slotPizza = slotId ? flavorsById.get(slotId) : null;
-                    const isBase = idx === 0;
-                    return (
-                      <div
-                        key={slotLabel}
-                        className="flex items-center justify-between gap-3 rounded-xl bg-black/5 border border-red-500/20 px-4 py-3"
-                      >
-                        <div className="min-w-0">
-                          <div className="text-[10px] font-black text-black/40 uppercase tracking-widest">
-                            {slotLabel}
+              {flavorsCount > 1 && (
+                <>
+                  <p className="text-xs font-bold text-black/60">
+                    Selecione {flavorsCount} sabores ({selectedFlavors.length}/
+                    {flavorsCount})
+                  </p>
+                  <div className="space-y-2">
+                    {Array.from({ length: flavorsCount }).map((_, idx) => {
+                      const slotLabel = `Sabor ${idx + 1}`;
+                      const slotId = safeFlavorIds[idx];
+                      const slotPizza = slotId ? flavorsById.get(slotId) : null;
+                      const isBase = idx === 0;
+                      return (
+                        <div
+                          key={slotLabel}
+                          className="flex items-center justify-between gap-3 rounded-xl bg-black/5 border border-red-500/20 px-4 py-3"
+                        >
+                          <div className="min-w-0">
+                            <div className="text-[10px] font-black text-black/40 uppercase tracking-widest">
+                              {slotLabel}
+                            </div>
+                            <div className="font-black text-sm text-black whitespace-normal break-words leading-tight">
+                              {slotPizza?.name ||
+                                (isBase ? pizza.name : "Escolha um sabor abaixo")}
+                            </div>
                           </div>
-                          <div className="font-black text-sm text-black whitespace-normal break-words leading-tight">
-                            {slotPizza?.name ||
-                              (isBase ? pizza.name : "Escolha um sabor abaixo")}
-                          </div>
+                          {!isBase && (
+                            <select
+                              value={slotId && slotId !== baseId ? String(slotId) : ""}
+                              onChange={(e) => setFlavorAtIndex(idx, e.target.value)}
+                              className="shrink-0 max-w-[52%] rounded-xl bg-white border border-red-500/20 px-3 py-2 text-xs font-black text-black/70 outline-none focus:border-[#25c522ff]"
+                            >
+                              <option value="">Selecionar</option>
+                              {flavorCandidates
+                                .filter((p) => p.id !== baseId)
+                                .map((p) => (
+                                  <option key={p.id} value={String(p.id)}>
+                                    {p.name}
+                                  </option>
+                                ))}
+                            </select>
+                          )}
                         </div>
-                        {!isBase && (
-                          <select
-                            value={slotId && slotId !== baseId ? String(slotId) : ""}
-                            onChange={(e) => setFlavorAtIndex(idx, e.target.value)}
-                            className="shrink-0 max-w-[52%] rounded-xl bg-white border border-red-500/20 px-3 py-2 text-xs font-black text-black/70 outline-none focus:border-[#25c522ff]"
-                          >
-                            <option value="">Selecionar</option>
-                            {flavorCandidates
-                              .filter((p) => p.id !== baseId)
-                              .map((p) => (
-                                <option key={p.id} value={String(p.id)}>
-                                  {p.name}
-                                </option>
-                              ))}
-                          </select>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           {(pizza.extras ?? []).length > 0 && (
             <div className="space-y-2">

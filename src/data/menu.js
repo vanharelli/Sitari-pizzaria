@@ -1,4 +1,4 @@
-export const CATEGORIES = ["Todas", "Salgadas", "Doces"];
+export const CATEGORIES = ["Todas", "Salgadas", "Doces", "Bebidas"];
 
 export const COLORS = {
   accent: "#25c522ff",
@@ -92,23 +92,27 @@ export function getPizzaImage(pizza) {
   return PIZZA_IMAGE_SALGADA;
 }
 
-function makePizza({ id, name, description, category, priceG }) {
+function makePizza({ id, name, description, category, priceG, imageUrl }) {
   const glowColor = guessColor(category);
+  const isDrink = category === "Bebidas";
   return {
     id,
     name,
     category,
     description,
-    imageUrl: category === "Doces" ? PIZZA_IMAGE_DOCE : PIZZA_IMAGE_SALGADA,
+    imageUrl:
+      imageUrl || (category === "Doces" ? PIZZA_IMAGE_DOCE : PIZZA_IMAGE_SALGADA),
     glowColor,
-    tag: category === "Doces" ? "Doce" : "Salgada",
+    tag: category === "Doces" ? "Doce" : isDrink ? "Bebida" : "Salgada",
     tagColor: glowColor,
     temps: "30min",
     rating: 4.8,
-    sizes: {
-      M: round2(priceG * MEDIA_FACTOR),
-      G: round2(priceG),
-    },
+    sizes: isDrink
+      ? { U: round2(priceG) }
+      : {
+          M: round2(priceG * MEDIA_FACTOR),
+          G: round2(priceG),
+        },
     extras: [],
     ingredients: buildIngredients(description),
   };
@@ -117,25 +121,25 @@ function makePizza({ id, name, description, category, priceG }) {
 const PIZZA_DATA = [
   { name: "Mussarela", description: "Molho de tomate pelado, mussarela e orégano.", priceG: 56.91, category: "Salgadas" },
   { name: "Zucchine", description: "Abobrinhas fatiadas, chimichurri e queijo parmesão.", priceG: 58.67, category: "Salgadas" },
-  { name: "Margherita", description: "Molho de tomate pelati, mussarela, tomates italianos e Pesto de Manjericão.", priceG: 61.8, category: "Salgadas" },
+  { name: "Margherita", description: "Molho de tomate pelati, mussarela, tomates italianos e Pesto de Manjericão.", priceG: 61.8, category: "Salgadas", imageUrl: "/Margherita.webp" },
   { name: "Provoleta", description: "Molho de tomate, queijo provolone, tomatinhos assados e chimichurri.", priceG: 64.06, category: "Salgadas" },
-  { name: "Calabresa", description: "Molho de tomate pelati, mussarela e calabresa.", priceG: 67.59, category: "Salgadas" },
+  { name: "Calabresa", description: "Molho de tomate pelati, mussarela e calabresa.", priceG: 67.59, category: "Salgadas", imageUrl: "/calabresa.webp" },
   { name: "Marinara", description: "Molho de tomate pelado, alho fresco, parmesão e pesto de manjericão.", priceG: 68.75, category: "Salgadas" },
   { name: "Portuguesa", description: "Molho de tomate pelado, presunto, tomates, ovo, azeitonas, cebola e mussarela.", priceG: 76.29, category: "Salgadas" },
   { name: "Siciliana", description: "Mussarela, calabresa, azeitonas, bacon e pimenta calabresa.", priceG: 78.78, category: "Salgadas" },
   { name: "Milho Verde", description: "Molho de pelati, milho, tomatinhos, champignons, mussarela e CATUPIRY®.", priceG: 82.93, category: "Salgadas" },
   { name: "Lombinho", description: "Pelati, lombo canadense, mussarela e CATUPIRY®.", priceG: 84.26, category: "Salgadas" },
-  { name: "Frango Pollo", description: "Molho de tomate, mussarela, frango com CATUPIRY®, champignons e azeitonas.", priceG: 85.09, category: "Salgadas" },
+  { name: "Frango Pollo", description: "Molho de tomate, mussarela, frango com CATUPIRY®, champignons e azeitonas.", priceG: 85.09, category: "Salgadas", imageUrl: "/Frango Pollo.webp" },
   { name: "Presunto", description: "Molho de pelati, mussarela, presunto, orégano, azeite e parmesão.", priceG: 85.39, category: "Salgadas" },
   { name: "Melanzane", description: "Berinjela frita marinada, molho de tomate, mussarela e amêndoas defumadas.", priceG: 85.5, category: "Salgadas" },
   { name: "Pépe", description: "Calabresa moída com pimenta dedo de moça, cebola e mussarela.", priceG: 86.54, category: "Salgadas" },
   { name: "Quatro Queijos", description: "Mussarela, provolone, CATUPIRY® e gorgonzola sobre molho de tomates.", priceG: 86.89, category: "Salgadas" },
-  { name: "Calábria", description: "Molho de pelati, mussarela, calabresa, tomate, azeitonas, cebola e parmesão.", priceG: 89.22, category: "Salgadas" },
+  { name: "Calábria", description: "Molho de pelati, mussarela, calabresa, tomate, azeitonas, cebola e parmesão.", priceG: 89.22, category: "Salgadas", imageUrl: "/Calábria.webp" },
   { name: "Presunto com Catupiry", description: "Molho, mussarela, presunto e CATUPIRY®.", priceG: 89.94, category: "Salgadas" },
   { name: "Camponesa", description: "Mussarela, lombinho, tomatinhos, champignons, cebola e orégano.", priceG: 90.92, category: "Salgadas" },
   { name: "Jardins do Guará", description: "Brócolis, tomatinhos, champignons, cebola roxa, azeitona, molho tarê, parmesão e amêndoas.", priceG: 92.7, category: "Salgadas" },
   { name: "Portuguesa Alla Cana", description: "Portuguesa clássica adicionada de calabresa e bacon em fatias.", priceG: 97.71, category: "Salgadas" },
-  { name: "Provençal", description: "Molho de tomate, alho, berinjela marinada, abobrinha, chimichurri, tomatinhos, azeitonas e parmesão.", priceG: 97.81, category: "Salgadas" },
+  { name: "Provençal", description: "Molho de tomate, alho, berinjela marinada, abobrinha, chimichurri, tomatinhos, azeitonas e parmesão.", priceG: 97.81, category: "Salgadas", imageUrl: "/Provençal.webp" },
   { name: "Bacon", description: "Molho de tomate pelado, mussarela, cebola caramelizada e bacon.", priceG: 102.27, category: "Salgadas" },
   { name: "Carne Seca", description: "Carne refogada na manteiga de garrafa, molho de tomate, mussarela e CATUPIRY®.", priceG: 102.63, category: "Salgadas" },
   { name: "Pepperoni", description: "Molho de tomate, mussarela e salame tipo pepperoni.", priceG: 102.63, category: "Salgadas" },
@@ -148,19 +152,41 @@ const PIZZA_DATA = [
   { name: "Franguito 36", description: "Molho de tomate, mussarela, frango, azeitonas Azapa, parmesão e bacon.", priceG: 113.83, category: "Salgadas" },
   { name: "Alla Páprika", description: "Molho de tomate pelado, gorgonzola, presunto cru, pistache e limão siciliano.", priceG: 117.54, category: "Salgadas" },
   { name: "Stoner", description: "Molho de pelati, mussarela, pepperoni, bacon, azeitonas, orégano e pimenta calabresa.", priceG: 124.56, category: "Salgadas" },
-  { name: "Enzo", description: "Molho de tomate pelado, rosbife, gorgonzola, cebola caramelizada no Vinho do Porto e bacon.", priceG: 126.82, category: "Salgadas" },
+  { name: "Enzo", description: "Molho de tomate pelado, rosbife, gorgonzola, cebola caramelizada no Vinho do Porto e bacon.", priceG: 126.82, category: "Salgadas", imageUrl: "/Enzo.webp" },
   { name: "Atum", description: "Molho de tomate pelado, atum, tomate, azeitonas, mussarela e CATUPIRY®.", priceG: 131.9, category: "Salgadas" },
-  { name: "Dolce Vita", description: "Molho de tomate, damasco, mussarela, brie, mel e amêndoas.", priceG: 132.63, category: "Salgadas" },
+  { name: "Dolce Vita", description: "Molho de tomate, damasco, mussarela, brie, mel e amêndoas.", priceG: 132.63, category: "Salgadas", imageUrl: "/Dolce Vita.webp" },
   { name: "Atum Clássico", description: "Molho de tomate pelado, atum em pedaços, mussarela, tomatinhos, cebola, azeitonas e parmesão.", priceG: 133.69, category: "Salgadas" },
-  { name: "Camarão", description: "Camarões no alho e azeite, CATUPIRY®, mussarela e tomatinhos assados.", priceG: 138.91, category: "Salgadas" },
+  { name: "Camarão", description: "Camarões no alho e azeite, CATUPIRY®, mussarela e tomatinhos assados.", priceG: 138.91, category: "Salgadas", imageUrl: "/Camarão.webp" },
   { name: "Atum Contemporâneo", description: "Molho pelati, atum em azeite, alcaparras, cebola, gorgonzola e raspas de limão.", priceG: 142.41, category: "Salgadas" },
   { name: "Alici", description: "Molho de tomate pelado, filé de anchovas argentinas, azeitonas, tomatinhos e orégano.", priceG: 158.34, category: "Salgadas" },
   { name: "Banana", description: "Banana, mussarela e canela com açúcar.", priceG: 45.54, category: "Doces" },
-  { name: "Banca", description: "Mussarela, banana, bacon e melado de cana.", priceG: 65.01, category: "Doces" },
+  { name: "Banca", description: "Mussarela, banana, bacon e melado de cana.", priceG: 65.01, category: "Doces", imageUrl: "/Banca.webp" },
   { name: "Lombo a Weslley", description: "Queijo derretido, lombo canadense e compota de abacaxi.", priceG: 69.74, category: "Doces" },
-  { name: "Banana com Chocolate", description: "Banana e chocolate.", priceG: 75.99, category: "Doces" },
+  { name: "Banana com Chocolate", description: "Banana e chocolate.", priceG: 75.99, category: "Doces", imageUrl: "/Banana com Chocolate.webp" },
   { name: "Suflair", description: "Chocolate Suflair e queijo.", priceG: 116.4, category: "Doces" },
   { name: "Nutella", description: "NUTELLA® e pistache.", priceG: 126.16, category: "Doces" },
+  { name: "Suco Néctar Del Valle 1L - Manga", description: "Suco Néctar Del Valle 1 litro - Manga.", priceG: 17.99, category: "Bebidas" },
+  { name: "Suco Néctar Del Valle 1L - Maracujá", description: "Suco Néctar Del Valle 1 litro - Maracujá.", priceG: 17.99, category: "Bebidas" },
+  { name: "Suco Néctar Del Valle 1L - Uva", description: "Suco Néctar Del Valle 1 litro - Uva.", priceG: 17.99, category: "Bebidas" },
+  { name: "Matte Leão Original 1,5L", description: "Matte Leão Original 1,5 litro.", priceG: 19.75, category: "Bebidas" },
+  { name: "Coca-Cola 2L", description: "Coca-Cola 2 litros.", priceG: 19.99, category: "Bebidas" },
+  { name: "Schweppes Citrus 1,5L", description: "Schweppes Citrus 1,5 litro.", priceG: 18.63, category: "Bebidas" },
+  { name: "Coca Zero 2L", description: "Coca Zero 2 litros.", priceG: 19.99, category: "Bebidas" },
+  { name: "Guaraná Zero 1,5L", description: "Guaraná Zero 1,5 litro.", priceG: 13.25, category: "Bebidas" },
+  { name: "Coca-Cola 600ml", description: "Coca-Cola 600ml.", priceG: 9.87, category: "Bebidas" },
+  { name: "Coca Zero 600ml", description: "Coca Zero 600ml.", priceG: 9.78, category: "Bebidas" },
+  { name: "Guaraná 600ml", description: "Guaraná 600ml.", priceG: 9.11, category: "Bebidas" },
+  { name: "Guaraná Zero 600ml", description: "Guaraná Zero 600ml.", priceG: 8.99, category: "Bebidas" },
+  { name: "Matte Leão Original 300ml", description: "Matte Leão Original 300ml.", priceG: 7.68, category: "Bebidas" },
+  { name: "Coca-Cola Lata", description: "Coca-Cola lata.", priceG: 5.24, category: "Bebidas" },
+  { name: "Coca Zero Lata", description: "Coca Zero lata.", priceG: 5.15, category: "Bebidas" },
+  { name: "Guaraná Lata", description: "Guaraná lata.", priceG: 4.99, category: "Bebidas" },
+  { name: "Guaraná Zero Lata", description: "Guaraná Zero lata.", priceG: 4.99, category: "Bebidas" },
+  { name: "Schweppes Tônica Lata", description: "Schweppes Tônica lata.", priceG: 5.84, category: "Bebidas" },
+  { name: "Schweppes Citrus Lata", description: "Schweppes Citrus lata.", priceG: 5.61, category: "Bebidas" },
+  { name: "Água com Gás", description: "Água com gás.", priceG: 4.0, category: "Bebidas" },
+  { name: "Água sem Gás", description: "Água sem gás.", priceG: 3.0, category: "Bebidas" },
+  { name: "Cerveja Heineken Lata", description: "Cerveja Heineken lata.", priceG: 10.0, category: "Bebidas" },
 ];
 
 export const PIZZAS = PIZZA_DATA.map((p, index) =>
