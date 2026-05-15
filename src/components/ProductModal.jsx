@@ -78,6 +78,28 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
     });
   };
 
+  const removeFlavor = (id) => {
+    if (!id) return;
+    if (id === baseId) return;
+    setFlavorIds((prev) => {
+      const current = Array.isArray(prev) ? prev : [];
+      const withBase = baseId ? [baseId, ...current.filter((x) => x !== baseId)] : current;
+      return withBase.filter((x) => x !== id);
+    });
+  };
+
+  const fillFlavor = (id) => {
+    if (!id) return;
+    if (id === baseId) return;
+    setFlavorIds((prev) => {
+      const current = Array.isArray(prev) ? prev : [];
+      const withBase = baseId ? [baseId, ...current.filter((x) => x !== baseId)] : current;
+      if (withBase.includes(id)) return withBase;
+      if (withBase.length >= flavorsCount) return withBase;
+      return [...withBase, id];
+    });
+  };
+
   const toggleExtra = (extra) =>
     setSelectedExtras((prev) =>
       prev.find((e) => e.name === extra.name)
@@ -126,11 +148,11 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
-        className="w-full max-w-lg bg-white rounded-t-3xl border-t border-red-500/20 overflow-hidden"
+        className="w-full max-w-lg bg-white rounded-t-3xl border-t border-red-500/20 overflow-hidden flex flex-col max-h-[92dvh]"
         onClick={(e) => e.stopPropagation()}
       >
         <div
-          className="h-[40dvh] relative flex items-center justify-center"
+          className="relative flex items-center justify-center shrink-0 h-[28dvh] sm:h-[34dvh] max-h-[340px]"
           style={{
             background: `radial-gradient(circle at center, ${pizza.glowColor}30, transparent)`,
           }}
@@ -149,7 +171,7 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
           />
         </div>
 
-        <div className="p-6 space-y-6 max-h-[55dvh] overflow-y-auto no-scrollbar">
+        <div className="flex-1 overflow-y-auto no-scrollbar p-6 space-y-6">
           <div>
             <h2 className="text-2xl font-black text-black">{pizza.name}</h2>
             <p className="text-black/60 text-sm">{pizza.description}</p>
@@ -205,6 +227,38 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
                   Selecione {flavorsCount} sabores ({selectedFlavors.length}/
                   {flavorsCount})
                 </p>
+                <div className="space-y-2">
+                  {Array.from({ length: flavorsCount }).map((_, idx) => {
+                    const slotLabel = `Sabor ${idx + 1}`;
+                    const slotId = safeFlavorIds[idx];
+                    const slotPizza = slotId ? flavorsById.get(slotId) : null;
+                    const isBase = idx === 0;
+                    return (
+                      <div
+                        key={slotLabel}
+                        className="flex items-center justify-between gap-3 rounded-xl bg-black/5 border border-red-500/20 px-4 py-3"
+                      >
+                        <div className="min-w-0">
+                          <div className="text-[10px] font-black text-black/40 uppercase tracking-widest">
+                            {slotLabel}
+                          </div>
+                          <div className="font-black text-sm text-black truncate">
+                            {slotPizza?.name ||
+                              (isBase ? pizza.name : "Escolha um sabor abaixo")}
+                          </div>
+                        </div>
+                        {!isBase && slotId && (
+                          <button
+                            onClick={() => removeFlavor(slotId)}
+                            className="shrink-0 px-3 py-2 rounded-xl bg-white border border-red-500/20 text-black/70 font-black text-xs"
+                          >
+                            Remover
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {flavorCandidates.map((p) => {
                     const isBase = p.id === baseId;
@@ -214,7 +268,9 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
                     return (
                       <button
                         key={p.id}
-                        onClick={() => toggleFlavor(p.id)}
+                        onClick={() =>
+                          isSelected ? removeFlavor(p.id) : fillFlavor(p.id)
+                        }
                         disabled={isBase || isFull}
                         className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${
                           isSelected
@@ -224,7 +280,11 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
                       >
                         <div className="font-black text-sm">{p.name}</div>
                         <div className="text-[10px] text-black/50">
-                          {isBase ? "Sabor principal" : "Toque para selecionar"}
+                          {isBase
+                            ? "Sabor principal"
+                            : isSelected
+                              ? "Selecionado (toque para remover)"
+                              : "Toque para selecionar"}
                         </div>
                       </button>
                     );
@@ -259,7 +319,7 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
           )}
         </div>
 
-        <div className="p-6 bg-white border-t border-red-500/20">
+        <div className="shrink-0 p-6 bg-white border-t border-red-500/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-black/40 font-bold">Total</span>
             <span className="text-black text-2xl font-black">
