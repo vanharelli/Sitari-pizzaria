@@ -242,7 +242,7 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
                           <div className="text-[10px] font-black text-black/40 uppercase tracking-widest">
                             {slotLabel}
                           </div>
-                          <div className="font-black text-sm text-black truncate">
+                          <div className="font-black text-sm text-black whitespace-normal break-words leading-tight">
                             {slotPizza?.name ||
                               (isBase ? pizza.name : "Escolha um sabor abaixo")}
                           </div>
@@ -278,7 +278,9 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
                             : "bg-black/5 border-red-500/20 text-black/70"
                         } ${isBase || isFull ? "opacity-60" : ""}`}
                       >
-                        <div className="font-black text-sm">{p.name}</div>
+                        <div className="font-black text-sm whitespace-normal break-words leading-tight">
+                          {p.name}
+                        </div>
                         <div className="text-[10px] text-black/50">
                           {isBase
                             ? "Sabor principal"

@@ -473,7 +473,7 @@ export default function App() {
                     <p className="text-black font-black text-base leading-tight">
                       {pizza.name}
                     </p>
-                    <p className="text-black/60 text-xs mt-2 line-clamp-3 min-h-[3.25rem]">
+                    <p className="text-black/60 text-xs mt-2 leading-snug">
                       {mostOrderedByName.get(pizza.name) || pizza.description}
                     </p>
                     <button
@@ -642,9 +642,9 @@ export default function App() {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 20, opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-6"
+              className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-6"
             >
-              <div className="w-full max-w-2xl bg-white rounded-3xl border border-red-500/20 overflow-hidden shadow-lg flex flex-col max-h-[85dvh]">
+              <div className="w-full max-w-2xl bg-white rounded-t-3xl sm:rounded-3xl border border-red-500/20 overflow-hidden shadow-lg flex flex-col max-h-[92dvh] sm:max-h-[85dvh] overflow-x-hidden">
                 <div className="p-6 border-b border-red-500/20 flex justify-between items-center">
                   <div>
                     <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">
@@ -682,12 +682,12 @@ export default function App() {
                                 draggable="false"
                               />
                               <div className="min-w-0">
-                                <p className="font-bold text-sm text-black truncate">
+                                <p className="font-bold text-sm text-black whitespace-normal break-words leading-tight">
                                   {item.name}
                                 </p>
                                 {Array.isArray(item.flavors) &&
                                   item.flavors.length > 1 && (
-                                    <p className="text-[10px] text-black/50 truncate">
+                                    <p className="text-[10px] text-black/50 whitespace-normal break-words leading-tight mt-1">
                                       Sabores: {item.flavors.join(" / ")}
                                     </p>
                                   )}
