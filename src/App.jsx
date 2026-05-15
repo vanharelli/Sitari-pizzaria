@@ -301,9 +301,9 @@ export default function App() {
       <header className="z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/40 px-6 py-4 flex items-center relative">
         <div className="sm:hidden">
           <h1 className="leading-none">
-            <div className="text-lg font-black tracking-tighter">
+            <div className="text-base font-black tracking-tighter">
               SITARI{" "}
-              <span className="text-black/70 font-black text-xs ml-0.5 tracking-widest uppercase">
+              <span className="text-black/70 font-black text-[10px] ml-0.5 tracking-widest uppercase">
                 Pizzaria
               </span>
             </div>
@@ -354,7 +354,7 @@ export default function App() {
                   initial={{ opacity: 0, y: 8, x: "-50%" }}
                   animate={{ opacity: 1, y: 0, x: "-50%" }}
                   exit={{ opacity: 0, y: 8, x: "-50%" }}
-                  className="absolute left-1/2 top-full mt-3 w-[260px] rounded-2xl bg-white border border-red-500/20 shadow-lg p-4 z-50"
+                  className="absolute left-1/2 top-full mt-3 w-[260px] rounded-2xl bg-white border border-[#25c522ff]/50 shadow-lg p-4 z-50"
                 >
                   <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">
                     Horário de funcionamento
