@@ -295,7 +295,7 @@ export default function App() {
         </div>
 
         <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2">
-          <div className="relative">
+          <div className="relative inline-block">
             <button
               onClick={() => setHoursOpen((v) => !v)}
               className={`px-4 py-2 rounded-full bg-white border text-xs font-black flex items-center gap-2 shadow-sm ${
