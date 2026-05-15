@@ -7,6 +7,10 @@ export function formatWhatsAppMessage(items, addressOrOptions, maybeOptions) {
     typeof addressOrOptions === "string" ? addressOrOptions : options.address || "";
   const addressParts = options.addressParts || null;
   const customer = options.customer || null;
+  const couponCode = options.couponCode || "";
+  const discount = Number(options.discount || 0);
+
+  const formatBRL = (v) => `R$ ${Number(v || 0).toFixed(2).replace(".", ",")}`;
 
   const lines = [
     "🍕 *NOVO PEDIDO - SITARI PIZZARIA*",
@@ -34,7 +38,25 @@ export function formatWhatsAppMessage(items, addressOrOptions, maybeOptions) {
   });
 
   lines.push("━━━━━━━━━━━━━━━━━━━━━━━━━━");
-  lines.push(`*💳 TOTAL: R$ ${total.toFixed(2)}*`);
+  const hasDiscount = couponCode && Number.isFinite(discount) && discount > 0;
+  if (hasDiscount) {
+    const finalTotal = Math.max(0, total - discount);
+    lines.push(`*💰 SUBTOTAL: ${formatBRL(total)}*`);
+    lines.push(`[CUPOM APLICADO: ${String(couponCode).toUpperCase()}]`);
+    lines.push(`[DESCONTO: - ${formatBRL(discount)}]`);
+    if (options.payment) {
+      const paymentLine = [
+        options.payment,
+        options.paymentDetail ? `(${options.paymentDetail})` : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      lines.push(`[MÉTODO DE PAGAMENTO: ${paymentLine}]`);
+    }
+    lines.push(`*💳 TOTAL: ${formatBRL(finalTotal)}*`);
+  } else {
+    lines.push(`*💳 TOTAL: ${formatBRL(total)}*`);
+  }
   lines.push("");
 
   if (customer?.name) {

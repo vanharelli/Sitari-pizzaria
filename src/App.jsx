@@ -17,6 +17,7 @@ import { PizzaCard } from "./components/PizzaCard";
 import { ProductModal } from "./components/ProductModal";
 import { useCart } from "./hooks/useCart";
 import { getPizzaImage, PIZZAS, SITE_INFO } from "./data/menu";
+import { calculateDiscount, GlassCoupon } from "./sitari-menu";
 import { formatWhatsAppMessage } from "./utils/formatWhatsAppMessage";
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
   const [payment, setPayment] = useState("PIX");
   const [cardType, setCardType] = useState("Crédito");
   const [changeFor, setChangeFor] = useState("");
+  const [couponCode, setCouponCode] = useState("");
   const [customer, setCustomer] = useState({
     name: "",
     whatsapp: "",
@@ -60,6 +62,10 @@ export default function App() {
   };
 
   const status = getBusinessStatus();
+  const couponDiscount = couponCode
+    ? calculateDiscount(total, payment, couponCode)
+    : 0;
+  const finalTotal = Math.max(0, total - couponDiscount);
 
   const filtered =
     category === "Todas" ? PIZZAS : PIZZAS.filter((p) => p.category === category);
@@ -104,6 +110,14 @@ export default function App() {
       },
       { enableHighAccuracy: true, timeout: 5000, maximumAge: 60000 }
     );
+  };
+
+  const recordOrder = () => {
+    try {
+      const current = Number(localStorage.getItem("sitari_orders_count") || "0");
+      const next = Number.isFinite(current) ? current + 1 : 1;
+      localStorage.setItem("sitari_orders_count", String(next));
+    } catch {}
   };
 
   const mostOrderedMeta = [
@@ -800,14 +814,44 @@ export default function App() {
                           />
                         </div>
                       )}
+
+                      <GlassCoupon
+                        subtotal={total}
+                        method={payment}
+                        appliedCode={couponCode}
+                        onApply={({ code }) => setCouponCode(code)}
+                      />
                     </div>
 
                     <div className="p-6 bg-white border-t border-red-500/20 space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-black/50 font-bold">Total</span>
-                        <span className="text-black text-3xl font-black">
-                          R$ {total.toFixed(2)}
-                        </span>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-black/50 font-bold">
+                            Subtotal
+                          </span>
+                          <span className="text-black font-black">
+                            R$ {total.toFixed(2)}
+                          </span>
+                        </div>
+                        {couponCode && couponDiscount > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-black/50 font-bold">
+                              Cupom {String(couponCode).toUpperCase()}
+                            </span>
+                            <span
+                              className="font-black"
+                              style={{ color: "#25c522ff" }}
+                            >
+                              - R$ {couponDiscount.toFixed(2)}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex justify-between items-center">
+                          <span className="text-black/50 font-bold">Total</span>
+                          <span className="text-black text-3xl font-black">
+                            R$ {finalTotal.toFixed(2)}
+                          </span>
+                        </div>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <button
@@ -826,8 +870,10 @@ export default function App() {
                               !deliveryAddress.neighborhood.trim())
                           }
                           onClick={() =>
-                            window.open(
-                              `https://wa.me/${SITE_INFO.whatsappDigits}?text=${encodeURIComponent(
+                            (() => {
+                              const url = `https://wa.me/${
+                                SITE_INFO.whatsappDigits
+                              }?text=${encodeURIComponent(
                                 formatWhatsAppMessage(items, {
                                   addressParts:
                                     fulfillment === "Entrega"
@@ -838,10 +884,22 @@ export default function App() {
                                   payment,
                                   paymentDetail:
                                     payment === "Cartão" ? cardType : "",
-                                  changeFor: payment === "Dinheiro" ? changeFor : "",
+                                  changeFor:
+                                    payment === "Dinheiro" ? changeFor : "",
+                                  couponCode:
+                                    couponCode && couponDiscount > 0
+                                      ? String(couponCode).toUpperCase()
+                                      : "",
+                                  discount:
+                                    couponCode && couponDiscount > 0
+                                      ? couponDiscount
+                                      : 0,
                                 })
-                              )}`
-                            )
+                              )}`;
+
+                              window.open(url);
+                              recordOrder();
+                            })()
                           }
                           className={`py-4 rounded-2xl font-black text-lg flex items-center justify-center gap-3 shadow-[0_10px_40px_rgba(37,197,34,0.2)] ${
                             !customer.name.trim() || !customer.whatsapp.trim()
