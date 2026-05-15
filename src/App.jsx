@@ -280,7 +280,7 @@ export default function App() {
       </div>
 
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/20 px-6 py-4 flex items-center relative">
-        <div className="flex items-center gap-3">
+        <div className="hidden sm:flex items-center gap-3">
           <img
             src="/logosemfundo.png"
             alt="Sitari Pizzaria"
@@ -385,6 +385,12 @@ export default function App() {
       <main className="relative z-10 pb-32">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 lg:pr-28 py-8">
           <div className="mb-10">
+            <img
+              src="/logosemfundo.png"
+              alt="Sitari Pizzaria"
+              className="sm:hidden mx-auto h-24 w-24 object-contain drop-shadow-xl mb-4"
+              draggable="false"
+            />
             <h2 className="text-3xl sm:text-4xl font-black tracking-tighter leading-none mb-2">
               {SITE_INFO.intro.title}
             </h2>
