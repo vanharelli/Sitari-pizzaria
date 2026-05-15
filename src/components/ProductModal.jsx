@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import { IngredientChip } from "./IngredientChip";
 import { getPizzaImage } from "../data/menu";
 
 const SIZE_LABEL = {
@@ -80,17 +79,6 @@ export function ProductModal({ pizza, onClose, onAdd }) {
           <div>
             <h2 className="text-2xl font-black text-black">{pizza.name}</h2>
             <p className="text-black/60 text-sm">{pizza.description}</p>
-          </div>
-
-          <div className="flex gap-2">
-            {(pizza.ingredients ?? []).map((ing, i) => (
-              <IngredientChip
-                key={ing}
-                label={ing}
-                color={pizza.glowColor}
-                index={i}
-              />
-            ))}
           </div>
 
           <div className="grid grid-cols-2 gap-2">
