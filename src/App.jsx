@@ -280,21 +280,19 @@ export default function App() {
       </div>
 
       <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/20 px-6 py-4 flex items-center relative">
-        <div>
+        <div className="flex items-center gap-3">
+          <img
+            src="/logosemfundo.png"
+            alt="Sitari Pizzaria"
+            className="h-11 w-11 sm:h-12 sm:w-12 object-contain shrink-0"
+            draggable="false"
+          />
           <h1 className="leading-none">
-            <div className="flex items-center gap-2">
-              <img
-                src="/logosemfundo.png"
-                alt="Sitari Pizzaria"
-                className="h-8 w-8 sm:h-9 sm:w-9 object-contain"
-                draggable="false"
-              />
-              <div className="text-lg sm:text-xl font-black tracking-tighter">
-                SITARI{" "}
-                <span className="text-black/70 font-black text-xs sm:text-sm ml-0.5 sm:ml-1 tracking-widest uppercase">
-                  Pizzaria
-                </span>
-              </div>
+            <div className="text-lg sm:text-xl font-black tracking-tighter">
+              SITARI{" "}
+              <span className="text-black/70 font-black text-xs sm:text-sm ml-0.5 sm:ml-1 tracking-widest uppercase">
+                Pizzaria
+              </span>
             </div>
             <div className="text-[#25c522ff] font-black text-xs tracking-widest uppercase mt-1">
               Delivery
