@@ -316,7 +316,7 @@ export default function App() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 8 }}
-                  className="absolute left-1/2 -translate-x-1/2 mt-3 w-[260px] rounded-2xl bg-white border border-red-500/20 shadow-lg p-4 z-50"
+                  className="absolute left-1/2 top-full -translate-x-1/2 mt-3 w-[260px] rounded-2xl bg-white border border-red-500/20 shadow-lg p-4 z-50"
                 >
                   <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">
                     Horário de funcionamento
