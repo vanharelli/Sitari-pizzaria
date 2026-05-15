@@ -2,7 +2,7 @@ import { CATEGORIES } from "../data/menu";
 
 export function CategoryFilter({ active, onChange }) {
   return (
-    <div className="sticky top-[68px] z-20 px-4 py-3 bg-white/80 backdrop-blur-xl border-b border-red-500/20 overflow-x-auto no-scrollbar flex gap-2">
+    <div className="px-4 py-3 bg-white/80 backdrop-blur-xl border-b border-red-500/20 overflow-x-auto no-scrollbar flex gap-2">
       {CATEGORIES.map((cat) => (
         <button
           key={cat}
