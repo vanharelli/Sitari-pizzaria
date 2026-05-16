@@ -30,7 +30,7 @@ export function PizzaCard({ pizza, onSelect, sizeKey }) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
         <div
           className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[9px] font-black"
-          style={{ background: pizza.tagColor, color: "#000" }}
+          style={{ background: pizza.tagColor, color: "#fff" }}
         >
           {pizza.tag}
         </div>
@@ -53,7 +53,7 @@ export function PizzaCard({ pizza, onSelect, sizeKey }) {
             {sizeKey ? "R$ " : "A partir de R$ "}
             {price.toFixed(2).replace(".", ",")}
           </span>
-          <div className="w-8 h-8 rounded-lg bg-[#25c522ff] flex items-center justify-center text-black">
+          <div className="w-8 h-8 rounded-lg bg-[#145a2c] flex items-center justify-center text-white">
             <Plus size={16} />
           </div>
         </div>

@@ -9,7 +9,7 @@ export function CategoryFilter({ active, onChange }) {
           onClick={() => onChange(cat)}
           className={`px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
             active === cat
-              ? "bg-[#25c522ff] text-black"
+              ? "bg-[#145a2c] text-white"
               : "bg-black/5 border border-red-500/20 text-black/60"
           }`}
         >

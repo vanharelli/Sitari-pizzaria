@@ -55,7 +55,7 @@ export function PromotionPopup({ open, coupon, onActivate, onClose }: Props) {
                 <p className="text-white font-black text-2xl mt-2">
                   {coupon.headline}
                 </p>
-                <p className="mt-3 font-black text-base" style={{ color: "#25c522ff" }}>
+                <p className="mt-3 font-black text-base" style={{ color: "#145a2c" }}>
                   Economia: - {formatBRL(coupon.discount)}
                 </p>
               </div>
@@ -69,7 +69,7 @@ export function PromotionPopup({ open, coupon, onActivate, onClose }: Props) {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -6 }}
-                    className="w-full py-4 rounded-2xl bg-[#25c522ff] text-black font-black text-lg flex items-center justify-center gap-3"
+                    className="w-full py-4 rounded-2xl bg-[#145a2c] text-white font-black text-lg flex items-center justify-center gap-3"
                   >
                     <Check size={22} /> Desconto ativado
                   </motion.div>
@@ -82,10 +82,10 @@ export function PromotionPopup({ open, coupon, onActivate, onClose }: Props) {
                       setIsConfirmed(true);
                       window.setTimeout(() => onClose?.(), 900);
                     }}
-                    className="w-full py-4 rounded-2xl font-black text-lg text-black"
+                    className="w-full py-4 rounded-2xl font-black text-lg text-white"
                     style={{
-                      backgroundColor: "#25c522ff",
-                      boxShadow: "0 0 40px rgba(37,197,34,0.25)",
+                      backgroundColor: "#145a2c",
+                      boxShadow: "0 0 40px rgba(20,90,44,0.25)",
                       animation: "sitariPulse 1.2s ease-in-out infinite",
                     }}
                   >
