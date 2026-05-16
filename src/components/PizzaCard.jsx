@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { StarRating } from "./StarRating";
-import { getPizzaImage } from "../data/menu";
+import { getPizzaImage } from "../logic/menu";
 
 export function PizzaCard({ pizza, onSelect, sizeKey }) {
   const prices = Object.values(pizza.sizes ?? {}).filter(

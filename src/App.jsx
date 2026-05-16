@@ -44,6 +44,10 @@ export default function App() {
     whatsapp: "",
   });
   const mostOrderedScrollRef = useRef(null);
+  const mostOrderedCardRefs = useRef([]);
+  const mostOrderedRafRef = useRef(0);
+  const [mostOrderedActiveIndex, setMostOrderedActiveIndex] = useState(0);
+  const [mostOrderedHoverIndex, setMostOrderedHoverIndex] = useState(null);
   const promoMetaRef = useRef({ lastShownCode: "", lastSubtotal: 0 });
   const { items, addItem, incrementItem, decrementItem, removeItem, total } =
     useCart();
@@ -78,8 +82,14 @@ export default function App() {
   const finalTotal = Math.max(0, total - couponDiscount);
   const bestOffer = findBestCoupon(total, payment);
 
+  const visiblePizzas = PIZZAS.filter((p) => p.category !== "Bebidas");
+  const drinkOptions = PIZZAS.filter((p) => p.category === "Bebidas").sort(
+    (a, b) => String(a.name).localeCompare(String(b.name))
+  );
   const filtered =
-    category === "Todas" ? PIZZAS : PIZZAS.filter((p) => p.category === category);
+    category === "Todas"
+      ? visiblePizzas
+      : visiblePizzas.filter((p) => p.category === category);
 
   const destinationLat = SITE_INFO.google?.location?.lat;
   const destinationLng = SITE_INFO.google?.location?.lng;
@@ -283,6 +293,51 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    const scroller = mostOrderedScrollRef.current;
+    if (!scroller) return;
+
+    const computeActive = () => {
+      mostOrderedRafRef.current = 0;
+      const containerRect = scroller.getBoundingClientRect();
+      const containerCenter = containerRect.left + containerRect.width / 2;
+
+      let bestIndex = 0;
+      let bestDistance = Number.POSITIVE_INFINITY;
+
+      for (let i = 0; i < mostOrderedCardRefs.current.length; i += 1) {
+        const card = mostOrderedCardRefs.current[i];
+        if (!card) continue;
+        const rect = card.getBoundingClientRect();
+        const center = rect.left + rect.width / 2;
+        const distance = Math.abs(center - containerCenter);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestIndex = i;
+        }
+      }
+
+      setMostOrderedActiveIndex(bestIndex);
+    };
+
+    const onScroll = () => {
+      if (mostOrderedRafRef.current) return;
+      mostOrderedRafRef.current = window.requestAnimationFrame(computeActive);
+    };
+
+    computeActive();
+    scroller.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      scroller.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (mostOrderedRafRef.current) {
+        window.cancelAnimationFrame(mostOrderedRafRef.current);
+        mostOrderedRafRef.current = 0;
+      }
+    };
+  }, [mostOrderedPizzas.length]);
+
+  useEffect(() => {
     const onScroll = () => {
       setHeaderActive(window.scrollY > 8);
     };
@@ -449,9 +504,22 @@ export default function App() {
               className="sm:hidden mx-auto h-24 w-24 object-contain drop-shadow-xl mb-4"
               draggable="false"
             />
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tighter leading-none mb-2">
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tighter leading-none mb-2 text-center">
               {SITE_INFO.intro.title}
             </h2>
+            <div className="flex justify-center gap-1.5 mb-3">
+              {[0, 1, 2, 3, 4].map((i) => (
+                <Star
+                  key={i}
+                  size={18}
+                  className="text-yellow-400 fill-yellow-400"
+                  style={{
+                    animation: "starPulse 1.8s ease-in-out infinite",
+                    animationDelay: `${i * 0.14}s`,
+                  }}
+                />
+              ))}
+            </div>
             <p className="text-black/70 font-medium">{SITE_INFO.tagline}</p>
             <p className="text-black/60 text-sm mt-3">{SITE_INFO.intro.text}</p>
             <p className="text-black text-sm mt-4 font-bold">
@@ -484,46 +552,71 @@ export default function App() {
 
           <div
             ref={mostOrderedScrollRef}
-            className="mt-5 -mx-1 px-1 overflow-x-auto no-scrollbar"
+            className="mt-5 -mx-1 px-1 py-3 overflow-x-auto no-scrollbar snap-x snap-mandatory scroll-smooth"
           >
             <div className="flex gap-3 min-w-max">
-              {mostOrderedPizzas.map((pizza) => (
+              {mostOrderedPizzas.map((pizza, index) => {
+                const focusIndex =
+                  typeof mostOrderedHoverIndex === "number"
+                    ? mostOrderedHoverIndex
+                    : mostOrderedActiveIndex;
+                const isFocused = index === focusIndex;
+
+                return (
                 <div
                   key={pizza.id}
-                  className="w-[260px] rounded-2xl bg-white border border-red-500/20 shadow-sm overflow-hidden"
+                  ref={(el) => {
+                    mostOrderedCardRefs.current[index] = el;
+                  }}
+                  onMouseEnter={() => setMostOrderedHoverIndex(index)}
+                  onMouseLeave={() => setMostOrderedHoverIndex(null)}
+                  className={`w-[260px] h-[340px] shrink-0 snap-center rounded-2xl bg-black border border-red-500/20 shadow-sm overflow-hidden transition-all duration-300 ${
+                    isFocused
+                      ? "scale-[1.02] opacity-100 blur-0 ring-2 ring-[#25c522ff]/45"
+                      : "scale-[0.98] opacity-70 blur-[1.2px]"
+                  }`}
                 >
-                  <div
-                    className="h-32 flex items-center justify-center relative"
-                    style={{
-                      background: `radial-gradient(circle, ${pizza.glowColor}18, transparent)`,
-                    }}
+                  <button
+                    onClick={() => setSelectedPizza(pizza)}
+                    className="relative w-full h-full text-left"
                   >
                     <img
                       src={pizza.imageUrl}
                       alt={pizza.name}
-                      className="h-24 w-24 object-contain drop-shadow-2xl"
+                      className="absolute inset-0 h-full w-full object-cover"
                       draggable="false"
                     />
-                    <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-black bg-[#25c522ff] text-black">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[9px] font-black bg-[#25c522ff] text-black">
                       MAIS PEDIDA
                     </div>
-                  </div>
-                  <div className="p-4">
-                    <p className="text-black font-black text-base leading-tight">
-                      {pizza.name}
-                    </p>
-                    <p className="text-black/60 text-xs mt-2 leading-snug">
-                      {mostOrderedByName.get(pizza.name) || pizza.description}
-                    </p>
-                    <button
-                      onClick={() => setSelectedPizza(pizza)}
-                      className="mt-4 w-full py-3 rounded-2xl bg-[#25c522ff] text-black font-black text-sm"
-                    >
-                      PEÇA AGORA!
-                    </button>
-                  </div>
+
+                    <div className="absolute inset-x-0 top-0 p-4">
+                      <p
+                        className="text-white/85 text-xs leading-snug"
+                        style={{
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                        }}
+                      >
+                        {mostOrderedByName.get(pizza.name) || pizza.description}
+                      </p>
+                    </div>
+
+                    <div className="absolute inset-x-0 bottom-0 p-4">
+                      <p className="text-white font-black text-lg leading-tight">
+                        {pizza.name}
+                      </p>
+                      <div className="mt-3 inline-flex items-center justify-center px-4 py-2 rounded-2xl bg-[#25c522ff] text-black font-black text-xs">
+                        PEÇA AGORA!
+                      </div>
+                    </div>
+                  </button>
                 </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -701,6 +794,66 @@ export default function App() {
                 {checkoutStep === 1 ? (
                   <>
                     <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-4">
+                      {drinkOptions.length > 0 && (
+                        <div className="rounded-2xl bg-white/80 border border-red-500/20 p-4 shadow-sm">
+                          <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">
+                            Bebidas
+                          </p>
+                          <h4 className="text-black font-black text-base mt-1">
+                            Adicionar bebidas
+                          </h4>
+
+                          <div className="mt-3 -mx-1 px-1 overflow-x-auto no-scrollbar">
+                            <div className="flex gap-2 min-w-max">
+                              {drinkOptions.map((drink) => {
+                                const price = drink?.sizes?.U ?? 0;
+                                return (
+                                  <div
+                                    key={drink.id}
+                                    className="w-[220px] h-[140px] shrink-0 rounded-2xl overflow-hidden border border-red-500/20 bg-black relative"
+                                  >
+                                    <img
+                                      src={getPizzaImage(drink)}
+                                      alt={drink.name}
+                                      className="absolute inset-0 h-full w-full object-cover"
+                                      draggable="false"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" />
+                                    <div className="absolute inset-x-0 bottom-0 p-3 flex items-end justify-between gap-2">
+                                      <div className="min-w-0">
+                                        <p className="text-white font-black text-sm leading-tight whitespace-normal break-words">
+                                          {drink.name}
+                                        </p>
+                                        <p className="text-white/80 text-[11px] font-black mt-1">
+                                          R$ {price.toFixed(2).replace(".", ",")}
+                                        </p>
+                                      </div>
+                                      <button
+                                        onClick={() =>
+                                          addItem({
+                                            name: drink.name,
+                                            flavorsCount: 1,
+                                            flavors: [drink.name],
+                                            size: "Unidade",
+                                            sizeKey: "U",
+                                            price,
+                                            extras: [],
+                                            imageUrl: getPizzaImage(drink),
+                                          })
+                                        }
+                                        className="shrink-0 w-10 h-10 rounded-2xl bg-[#25c522ff] text-black flex items-center justify-center shadow-[0_10px_30px_rgba(37,197,34,0.22)]"
+                                      >
+                                        <Plus size={18} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {items.map((item) => {
                         const qty = item.qty || 1;
                         const unit =

@@ -1,9 +1,9 @@
-import { CATEGORIES } from "../data/menu";
+import { CATEGORIES } from "../logic/menu";
 
 export function CategoryFilter({ active, onChange }) {
   return (
     <div className="px-4 py-3 bg-white/80 backdrop-blur-xl border-b border-red-500/20 overflow-x-auto no-scrollbar flex gap-2">
-      {CATEGORIES.map((cat) => (
+      {CATEGORIES.filter((cat) => cat !== "Bebidas").map((cat) => (
         <button
           key={cat}
           onClick={() => onChange(cat)}

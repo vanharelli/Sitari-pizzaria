@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
-import { getPizzaImage } from "../data/menu";
+import { getPizzaImage } from "../logic/menu";
 
 const SIZE_LABEL = {
   M: "Média",
@@ -15,6 +15,8 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
   const [flavorIds, setFlavorIds] = useState([]);
   const [selectedExtras, setSelectedExtras] = useState([]);
   const [added, setAdded] = useState(false);
+  const [openFlavorIndex, setOpenFlavorIndex] = useState(null);
+  const openFlavorIndexRef = useRef(null);
 
   const sizeOptions = useMemo(() => {
     const keys = Object.keys(pizza?.sizes || {});
@@ -31,6 +33,8 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
     setAdded(false);
     setFlavorsCount(1);
     setFlavorIds(pizza?.id ? [pizza.id, 0, 0, 0] : []);
+    setOpenFlavorIndex(null);
+    openFlavorIndexRef.current = null;
   }, [pizza?.id, sizeOptions]);
 
   const flavorCandidates = useMemo(() => {
@@ -68,6 +72,8 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
   const setFlavorsCountSafe = (next) => {
     const n = Math.max(1, Math.min(4, Number(next) || 1));
     setFlavorsCount(n);
+    setOpenFlavorIndex(null);
+    openFlavorIndexRef.current = null;
     setFlavorIds((prev) => {
       if (!baseId) return [];
       const current = Array.isArray(prev) ? prev : [];
@@ -115,6 +121,20 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
       return slots;
     });
   };
+
+  useEffect(() => {
+    openFlavorIndexRef.current = openFlavorIndex;
+  }, [openFlavorIndex]);
+
+  useEffect(() => {
+    if (openFlavorIndexRef.current == null) return;
+    const onKeyDown = (e) => {
+      if (e.key !== "Escape") return;
+      setOpenFlavorIndex(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [openFlavorIndex]);
 
   const toggleExtra = (extra) =>
     setSelectedExtras((prev) =>
@@ -193,23 +213,25 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
             <p className="text-black/60 text-sm">{pizza.description}</p>
           </div>
 
-          <div className="space-y-2">
-            <p className="text-[10px] font-bold text-black/30 uppercase tracking-widest">
+          <div className="space-y-1.5">
+            <p className="text-[9px] font-bold text-black/30 uppercase tracking-widest">
               Tamanho
             </p>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5">
             {sizeOptions.map((s) => (
               <button
                 key={s}
                 onClick={() => setSizeKey(s)}
-                className={`py-3 rounded-xl border transition-all ${
+                className={`py-2.5 rounded-xl border transition-all ${
                   sizeKey === s
                     ? "bg-[#25c522ff]/20 border-[#25c522ff] text-black"
                     : "bg-black/5 border-red-500/20 text-black/60"
                 }`}
               >
-                <div className="text-xs font-bold">{SIZE_LABEL[s] ?? s}</div>
-                <div className="text-[10px]">
+                <div className="text-[11px] font-black">
+                  {SIZE_LABEL[s] ?? s}
+                </div>
+                <div className="text-[9px]">
                   R${(pizza.sizes?.[s] ?? 0).toFixed(2).replace(".", ",")}
                 </div>
               </button>
@@ -218,7 +240,7 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
           </div>
 
           {!isDrink && (
-            <div className="space-y-2">
+            <div className="space-y-2" onClick={() => setOpenFlavorIndex(null)}>
               <p className="text-[10px] font-bold text-black/30 uppercase tracking-widest">
                 Sabores
               </p>
@@ -253,10 +275,13 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
                       const slotId = safeFlavorIds[idx];
                       const slotPizza = slotId ? flavorsById.get(slotId) : null;
                       const isBase = idx === 0;
+                      const candidates = flavorCandidates.filter(
+                        (p) => p.id !== baseId
+                      );
                       return (
                         <div
                           key={slotLabel}
-                          className="flex items-center justify-between gap-3 rounded-xl bg-black/5 border border-red-500/20 px-4 py-3"
+                          className="relative flex items-center justify-between gap-3 rounded-xl bg-black/5 border border-red-500/20 px-4 py-3"
                         >
                           <div className="min-w-0">
                             <div className="text-[10px] font-black text-black/40 uppercase tracking-widest">
@@ -268,20 +293,92 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
                             </div>
                           </div>
                           {!isBase && (
-                            <select
-                              value={slotId && slotId !== baseId ? String(slotId) : ""}
-                              onChange={(e) => setFlavorAtIndex(idx, e.target.value)}
-                              className="shrink-0 max-w-[52%] rounded-xl bg-white border border-red-500/20 px-3 py-2 text-xs font-black text-black/70 outline-none focus:border-[#25c522ff]"
-                            >
-                              <option value="">Selecionar</option>
-                              {flavorCandidates
-                                .filter((p) => p.id !== baseId)
-                                .map((p) => (
-                                  <option key={p.id} value={String(p.id)}>
-                                    {p.name}
-                                  </option>
-                                ))}
-                            </select>
+                            <div className="shrink-0 w-[52%] max-w-[52%]">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenFlavorIndex((prev) =>
+                                    prev === idx ? null : idx
+                                  );
+                                }}
+                                className={`w-full rounded-xl bg-white border px-3 py-2 text-xs font-black outline-none transition-colors ${
+                                  openFlavorIndex === idx
+                                    ? "border-[#25c522ff] text-black"
+                                    : "border-red-500/20 text-black/70"
+                                }`}
+                              >
+                                <span className="block truncate">
+                                  {slotPizza?.name ? slotPizza.name : "Selecionar"}
+                                </span>
+                              </button>
+
+                              {openFlavorIndex === idx && (
+                                <div
+                                  className="absolute right-4 top-[calc(100%+10px)] z-20 w-[min(380px,calc(100%-2rem))] rounded-2xl border border-red-500/20 bg-white/90 backdrop-blur-xl shadow-xl overflow-hidden"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <div className="px-4 py-3 border-b border-red-500/15">
+                                    <div className="text-[10px] font-black text-black/40 uppercase tracking-widest">
+                                      Escolha um sabor
+                                    </div>
+                                    <div className="text-xs font-black text-black">
+                                      {slotLabel}
+                                    </div>
+                                  </div>
+                                  <div className="max-h-[44dvh] overflow-y-auto no-scrollbar p-3 space-y-2">
+                                    {candidates.map((p) => {
+                                      const isSelected = slotId === p.id;
+                                      return (
+                                        <button
+                                          key={p.id}
+                                          type="button"
+                                          onClick={() => {
+                                            setFlavorAtIndex(idx, p.id);
+                                            setOpenFlavorIndex(null);
+                                          }}
+                                          className="w-full text-left"
+                                        >
+                                          <div
+                                            className={`relative overflow-hidden rounded-2xl border transition-all ${
+                                              isSelected
+                                                ? "border-[#25c522ff]/70 ring-2 ring-[#25c522ff]/25"
+                                                : "border-red-500/15 hover:border-red-500/30"
+                                            }`}
+                                          >
+                                            <div className="relative h-[74px]">
+                                              <img
+                                                src={getPizzaImage(p)}
+                                                alt={p.name}
+                                                className="absolute inset-0 h-full w-full object-cover"
+                                                draggable="false"
+                                              />
+                                              <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/35 to-transparent" />
+                                              <div className="relative p-3">
+                                                <div className="text-white font-black text-sm leading-tight">
+                                                  {p.name}
+                                                </div>
+                                                <div
+                                                  className="text-white/80 text-[11px] leading-snug mt-1"
+                                                  style={{
+                                                    display: "-webkit-box",
+                                                    WebkitLineClamp: 2,
+                                                    WebkitBoxOrient: "vertical",
+                                                    overflow: "hidden",
+                                                  }}
+                                                >
+                                                  {p.description}
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
                       );

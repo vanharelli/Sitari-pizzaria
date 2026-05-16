@@ -48,33 +48,16 @@ export const SITE_INFO = {
 
 const MEDIA_FACTOR = SITE_INFO.sizes.M.startingAt / SITE_INFO.sizes.G.startingAt;
 
-function round2(value) {
+function round2(value: number) {
   return Math.round(value * 100) / 100;
 }
 
-function guessEmoji(name, category) {
-  const n = name.toLowerCase();
-  if (category === "Doces") {
-    if (n.includes("banana")) return "🍌";
-    if (n.includes("nutella")) return "🍫";
-    if (n.includes("suflair")) return "🍫";
-    return "🍯";
-  }
-  if (n.includes("camar")) return "🍤";
-  if (n.includes("atum")) return "🐟";
-  if (n.includes("pepperoni")) return "🔥";
-  if (n.includes("carne")) return "🥩";
-  if (n.includes("bacon")) return "🥓";
-  if (n.includes("frango")) return "🐔";
-  return "🍕";
-}
-
-function guessColor(category) {
+function guessColor(category: string) {
   if (category === "Doces") return COLORS.danger;
   return COLORS.accent;
 }
 
-function buildIngredients(description) {
+function buildIngredients(description: string) {
   const parts = description
     .replace(/\s+/g, " ")
     .split(",")
@@ -86,11 +69,11 @@ function buildIngredients(description) {
 const PIZZA_IMAGE_SALGADA = "/pizzas/pizza-salgada.webp";
 const PIZZA_IMAGE_DOCE = "/pizzas/pizza-doce.webp";
 
-function svgDataUrl(svg) {
+function svgDataUrl(svg: string) {
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
-function drinkKindFromName(name) {
+function drinkKindFromName(name?: string) {
   const n = String(name || "").toLowerCase();
   if (/(coca|guaran|schweppes)/.test(n)) return "refrigerantes";
   return "bebidas";
@@ -104,7 +87,9 @@ const DRINK_IMAGE_REFRIGERANTES = svgDataUrl(
   `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600"><defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b1411"/><stop offset="1" stop-color="#0a0a0a"/></linearGradient><radialGradient id="glow" cx="30%" cy="25%" r="60%"><stop offset="0" stop-color="#25c522" stop-opacity="0.45"/><stop offset="1" stop-color="#25c522" stop-opacity="0"/></radialGradient></defs><rect width="900" height="600" rx="48" fill="url(#bg)"/><rect width="900" height="600" rx="48" fill="url(#glow)"/><g opacity="0.25" fill="#ffffff"><circle cx="745" cy="118" r="86"/><circle cx="745" cy="118" r="52"/></g><g fill="none" stroke="#ffffff" stroke-opacity="0.9" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"><path d="M340 150h72l14 34v78c0 22-18 40-40 40h-20c-22 0-40-18-40-40v-78l14-34z"/><path d="M350 150v-34h52v34"/><path d="M520 160h92v258c0 38-30 68-68 68h-24c-38 0-68-30-68-68V160z"/><path d="M520 160v-26c0-18 14-32 32-32h28c18 0 32 14 32 32v26"/></g><text x="60" y="105" fill="#ffffff" fill-opacity="0.95" font-family="system-ui,-apple-system,Segoe UI,Roboto,Arial" font-size="50" font-weight="900" letter-spacing="3.5">REFRIGERANTES</text><text x="60" y="155" fill="#ffffff" fill-opacity="0.78" font-family="system-ui,-apple-system,Segoe UI,Roboto,Arial" font-size="22" font-weight="800" letter-spacing="1.5">COCA • GUARANÁ • SCHWEPPES</text></svg>`
 );
 
-export function getPizzaImage(pizza) {
+export function getPizzaImage(
+  pizza: { imageUrl?: string; category?: string; name?: string } | null
+) {
   if (pizza?.imageUrl) return pizza.imageUrl;
   if (pizza?.category === "Bebidas") {
     return drinkKindFromName(pizza?.name) === "refrigerantes"
@@ -115,7 +100,21 @@ export function getPizzaImage(pizza) {
   return PIZZA_IMAGE_SALGADA;
 }
 
-function makePizza({ id, name, description, category, priceG, imageUrl }) {
+function makePizza({
+  id,
+  name,
+  description,
+  category,
+  priceG,
+  imageUrl,
+}: {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  priceG: number;
+  imageUrl?: string;
+}) {
   const glowColor = guessColor(category);
   const isDrink = category === "Bebidas";
   const defaultImageUrl = isDrink
@@ -218,6 +217,4 @@ const PIZZA_DATA = [
   { name: "Cerveja Heineken Lata", description: "Cerveja Heineken lata.", priceG: 10.0, category: "Bebidas" },
 ];
 
-export const PIZZAS = PIZZA_DATA.map((p, index) =>
-  makePizza({ id: index + 1, ...p })
-);
+export const PIZZAS = PIZZA_DATA.map((p, index) => makePizza({ id: index + 1, ...p }));
