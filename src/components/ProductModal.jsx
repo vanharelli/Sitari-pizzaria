@@ -315,50 +315,6 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }) {
                   >
                     Voltar
                   </button>
-
-                  {flavorsCount > 1 && (
-                    <div className="rounded-2xl bg-black/5 border border-red-500/20 p-3">
-                      <p className="text-[10px] font-black text-black/40 uppercase tracking-widest">
-                        Seleção de sabores
-                      </p>
-                      <p className="text-[13px] font-black text-black mt-1">
-                        {selectedFlavors.length}/{flavorsCount} selecionados
-                      </p>
-                      <div className="mt-2 grid grid-cols-2 gap-2">
-                        {Array.from({ length: flavorsCount }).map((_, i) => {
-                          const id = safeFlavorIds[i];
-                          const p = id ? flavorsById.get(id) : null;
-                          const isSelected = Boolean(p);
-                          return (
-                            <div
-                              key={i}
-                              className={`rounded-xl border px-3 py-2 ${
-                                isSelected
-                                  ? "border-[#145a2c]/70 bg-[#145a2c]/10"
-                                  : "border-red-500/20 bg-white/60"
-                              }`}
-                            >
-                              <p className="text-[9px] font-black text-black/40 uppercase tracking-widest">
-                                Sabor {i + 1}
-                              </p>
-                              <p className="text-[11px] font-black text-black leading-tight whitespace-normal break-words mt-1">
-                                {p?.name || (i === 0 ? pizza.name : "Selecionar")}
-                              </p>
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      <div className="mt-2 grid grid-cols-2 gap-2">
-                        <button
-                          onClick={openPickFlavors}
-                          className="col-span-2 py-2 rounded-2xl bg-[#145a2c] text-white font-black text-xs"
-                        >
-                          Continuar
-                        </button>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
 

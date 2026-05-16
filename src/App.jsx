@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronDown,
@@ -34,6 +34,7 @@ export default function App() {
   const [drinksOpen, setDrinksOpen] = useState(false);
   const [checkoutSummaryOpen, setCheckoutSummaryOpen] = useState(true);
   const [reviewSlideIndex, setReviewSlideIndex] = useState(0);
+  const [whatsAppBadgeVisible, setWhatsAppBadgeVisible] = useState(false);
   const [headerActive, setHeaderActive] = useState(false);
   const [hoursOpen, setHoursOpen] = useState(false);
   const [fulfillment, setFulfillment] = useState("Entrega");
@@ -48,6 +49,9 @@ export default function App() {
     whatsapp: "",
   });
   const mostOrderedScrollRef = useRef(null);
+  const cartScrollRef = useRef(null);
+  const headerRef = useRef(null);
+  const [headerHeight, setHeaderHeight] = useState(0);
   const mostOrderedCardRefs = useRef([]);
   const mostOrderedRafRef = useRef(0);
   const [mostOrderedActiveIndex, setMostOrderedActiveIndex] = useState(0);
@@ -349,6 +353,18 @@ export default function App() {
     return () => window.clearInterval(id);
   }, [reviewSlides.length]);
 
+  useEffect(() => {
+    let hideId = 0;
+    const showId = window.setTimeout(() => {
+      setWhatsAppBadgeVisible(true);
+      hideId = window.setTimeout(() => setWhatsAppBadgeVisible(false), 60000);
+    }, 60000);
+    return () => {
+      window.clearTimeout(showId);
+      if (hideId) window.clearTimeout(hideId);
+    };
+  }, []);
+
   const mostOrderedByName = new Map(
     mostOrderedMeta.map((p) => [p.name, p.description])
   );
@@ -428,7 +444,9 @@ export default function App() {
 
   useEffect(() => {
     const onScroll = () => {
-      setHeaderActive(window.scrollY > 8);
+      const doc = document.documentElement;
+      const atBottom = window.innerHeight + window.scrollY >= doc.scrollHeight - 40;
+      setHeaderActive(atBottom);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -439,6 +457,31 @@ export default function App() {
     if (!headerActive) setHoursOpen(false);
   }, [headerActive]);
 
+  useLayoutEffect(() => {
+    const node = headerRef.current;
+    if (!node) return;
+    const update = () => setHeaderHeight(node.offsetHeight || 0);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
+  useEffect(() => {
+    const node = cartScrollRef.current;
+    if (!node) return;
+    let t = 0;
+    const onScroll = () => {
+      node.classList.add("is-scrolling");
+      if (t) window.clearTimeout(t);
+      t = window.setTimeout(() => node.classList.remove("is-scrolling"), 900);
+    };
+    node.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      node.removeEventListener("scroll", onScroll);
+      if (t) window.clearTimeout(t);
+    };
+  }, [cartOpen]);
+
   return (
     <div
       className="min-h-screen text-black font-sans selection:bg-[#145a2c]/20 relative overflow-x-hidden"
@@ -448,25 +491,32 @@ export default function App() {
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",
+        "--sitari-header-h": `${headerActive ? headerHeight : 0}px`,
       }}
     >
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ backdropFilter: "blur(6px)", background: "rgba(255,255,255,0.42)" }}
+        style={{
+          WebkitBackdropFilter: `blur(${category === "Salgadas" ? 10 : 6}px)`,
+          backdropFilter: `blur(${category === "Salgadas" ? 10 : 6}px)`,
+          background:
+            category === "Salgadas"
+              ? "rgba(255,255,255,0.45)"
+              : "rgba(255,255,255,0.42)",
+          transition: "backdrop-filter 220ms ease, background 220ms ease",
+        }}
       />
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-[10%] -left-[10%] w-[45%] h-[45%] bg-[#145a2c]/12 blur-[120px] rounded-full" />
         <div className="absolute top-[25%] -right-[10%] w-[35%] h-[35%] bg-[#145a2c]/8 blur-[130px] rounded-full" />
       </div>
 
-      <motion.header
-        initial={false}
-        animate={headerActive ? { opacity: 1, y: 0 } : { opacity: 0, y: -18 }}
-        transition={{ duration: 0.22, ease: "easeOut" }}
-        className={`z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/40 px-6 py-4 flex items-center ${
+      <header
+        ref={headerRef}
+        className={`fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/40 px-6 py-4 flex items-center transition-all duration-200 ${
           headerActive
-            ? "fixed top-0 left-0 right-0"
-            : "absolute top-0 left-0 right-0 pointer-events-none"
+            ? "opacity-100 translate-y-0 pointer-events-auto shadow-sm"
+            : "opacity-0 -translate-y-3 pointer-events-none"
         }`}
       >
         <div className="sm:hidden">
@@ -593,9 +643,10 @@ export default function App() {
             <Instagram size={20} />
           </a>
         </div>
-      </motion.header>
 
-      <main className="relative z-10 pb-32">
+      </header>
+
+      <main className="relative z-10 pb-32 pt-[var(--sitari-header-h)]">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 lg:pr-28 py-8">
           <div className="mb-10">
             <img
@@ -604,7 +655,13 @@ export default function App() {
               className="sm:hidden mx-auto h-24 w-24 object-contain drop-shadow-xl mb-4"
               draggable="false"
             />
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tighter leading-none mb-2 text-center text-white mx-auto max-w-[26ch]">
+            <h2
+              className="text-3xl sm:text-4xl font-black tracking-tighter leading-none mb-2 text-center text-white mx-auto max-w-[26ch]"
+              style={{
+                textShadow:
+                  "0 1px 0 rgba(0,0,0,0.55), 0 2px 0 rgba(0,0,0,0.40), 0 10px 18px rgba(0,0,0,0.35)",
+              }}
+            >
               {(() => {
                 const title = String(SITE_INFO.intro.title || "");
                 const m = title.match(/sit[aá]ri/i);
@@ -615,7 +672,15 @@ export default function App() {
                 return (
                   <>
                     {before}
-                    <span className="text-[#145a2c]">{word.toUpperCase()}</span>
+                    <span
+                      className="text-[#145a2c]"
+                      style={{
+                        textShadow:
+                          "0 1px 0 rgba(0,0,0,0.55), 0 2px 0 rgba(0,0,0,0.40), 0 10px 18px rgba(0,0,0,0.35)",
+                      }}
+                    >
+                      {word.toUpperCase()}
+                    </span>
                     {after}
                   </>
                 );
@@ -675,18 +740,37 @@ export default function App() {
                 </svg>
               ))}
             </div>
-            <p className="text-black/70 font-medium">{SITE_INFO.tagline}</p>
-            <p className="text-black/60 text-sm mt-3">{SITE_INFO.intro.text}</p>
+            <p className="text-white/80 font-medium">{SITE_INFO.tagline}</p>
+            <p className="text-white/70 text-sm mt-3">{SITE_INFO.intro.text}</p>
             <p className="text-black text-sm mt-4 font-bold sitari-shimmer">
               {SITE_INFO.intro.promo}
             </p>
             <div className="flex flex-wrap gap-3 mt-6">
-              <a
-                href={`tel:${SITE_INFO.phoneDisplay.replace(/[^\d+]/g, "")}`}
-                className="px-5 py-3 rounded-2xl bg-white text-black border border-red-500/30 font-bold flex items-center gap-2"
-              >
-                <Phone size={16} /> {SITE_INFO.phoneDisplay}
-              </a>
+              {whatsAppBadgeVisible && (
+                <a
+                  href={`https://wa.me/${SITE_INFO.whatsappDigits}?text=${encodeURIComponent(
+                    "Pedido de pizza"
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-5 py-3 rounded-2xl bg-[#145a2c] text-white border border-white/20 font-black flex items-center gap-2 shadow-[0_10px_30px_rgba(20,90,44,0.18)]"
+                  aria-label="Abrir WhatsApp com mensagem de pedido"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M20.5 11.9c0 4.7-3.8 8.5-8.5 8.5c-1.5 0-3-.4-4.3-1.1l-4.2 1.1l1.1-4.1c-.8-1.3-1.3-2.9-1.3-4.5c0-4.7 3.8-8.5 8.5-8.5s8.7 3.8 8.7 8.6zm-8.5-6.8c-3.8 0-6.9 3-6.9 6.8c0 1.5.5 2.9 1.3 4.1l-.7 2.7l2.8-.7c1.1.7 2.4 1.1 3.6 1.1c3.8 0 6.9-3 6.9-6.8c0-3.9-3.1-7.2-7-7.2zm4 8.5c-.2-.1-1.2-.6-1.4-.6c-.2-.1-.4-.1-.5.1c-.2.2-.6.6-.7.7c-.1.1-.3.1-.5 0c-.2-.1-.8-.3-1.5-.9c-.6-.5-.9-1.1-1-1.3c-.1-.2 0-.3.1-.4l.3-.4c.1-.1.2-.3.2-.4c.1-.1 0-.3 0-.4c0-.1-.5-1.2-.7-1.6c-.2-.4-.4-.4-.5-.4h-.4c-.1 0-.3.1-.5.3c-.2.2-.7.7-.7 1.7s.7 2 .8 2.1c.1.2 1.4 2.3 3.5 3.1c.5.2.9.4 1.2.5c.5.1.9.1 1.3 0c.4-.1 1.2-.5 1.3-.9c.2-.4.2-.8.1-.9c0-.1-.1-.2-.3-.3z"
+                    />
+                  </svg>
+                  <span>Faça seu pedido agora</span>
+                </a>
+              )}
             </div>
           </div>
 
@@ -773,7 +857,9 @@ export default function App() {
           </div>
         </div>
 
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 lg:pr-28 -mt-2">
           <CategoryFilter active={category} onChange={setCategory} />
+        </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
           {filtered.map((pizza) => (
@@ -996,7 +1082,10 @@ export default function App() {
               exit={{ y: 20, opacity: 0 }}
               className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-6"
             >
-              <div className="w-full max-w-2xl bg-white rounded-t-3xl sm:rounded-3xl border border-red-500/20 shadow-lg flex flex-col max-h-[92dvh] sm:max-h-[85dvh] overflow-y-auto overflow-x-hidden">
+              <div
+                ref={cartScrollRef}
+                className="sitari-scroll w-full max-w-2xl bg-white rounded-t-3xl sm:rounded-3xl border border-red-500/20 shadow-lg flex flex-col max-h-[92dvh] sm:max-h-[85dvh] overflow-y-auto overflow-x-hidden"
+              >
                 <div className="p-6 border-b border-red-500/20 flex justify-between items-center">
                   <div>
                     <p className="text-[10px] font-bold text-black/40 uppercase tracking-widest">
@@ -1569,6 +1658,13 @@ export default function App() {
 
       <style>{`
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        .sitari-scroll { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+        .sitari-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+        .sitari-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sitari-scroll::-webkit-scrollbar-thumb { background-color: transparent; border-radius: 9999px; border: 2px solid transparent; background-clip: content-box; }
+        .sitari-scroll:hover::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.35); }
+        .sitari-scroll.is-scrolling { scrollbar-color: rgba(0,0,0,0.35) transparent; }
+        .sitari-scroll.is-scrolling::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.35); }
         * { -webkit-tap-highlight-color: transparent; }
       `}</style>
     </div>
