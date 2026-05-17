@@ -14,6 +14,7 @@ type Customer = {
 type Options = {
   address?: string;
   addressParts?: AddressParts | null;
+  locationLink?: string;
   customer?: Customer | null;
   couponCode?: string;
   discount?: number;
@@ -43,6 +44,7 @@ export function formatWhatsAppMessage(
       : maybeOptions || {};
   const address = typeof addressOrOptions === "string" ? addressOrOptions : options.address || "";
   const addressParts = options.addressParts || null;
+  const locationLink = String(options.locationLink || "").trim();
   const customer = options.customer || null;
   const couponCode = options.couponCode || "";
   const discount = Number(options.discount || 0);
@@ -119,6 +121,11 @@ export function formatWhatsAppMessage(
   } else if (address) {
     lines.push("📍 *Endereço de Entrega:*");
     lines.push(`   ${address}`);
+    lines.push("");
+  }
+
+  if (locationLink) {
+    lines.push(`📍 LINK DE ENTREGA (GPS): ${locationLink}`);
     lines.push("");
   }
 

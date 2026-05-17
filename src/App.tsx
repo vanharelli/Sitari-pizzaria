@@ -116,6 +116,9 @@ export default function App(): JSX.Element {
     complement: "",
     reference: "",
   });
+  const [locationLink, setLocationLink] = useState<string>("");
+  const [geoLoading, setGeoLoading] = useState<boolean>(false);
+  const [geoError, setGeoError] = useState<string>("");
 
   const getBusinessStatus = (): { isOpen: boolean; label: string } => {
     const now = new Date();
@@ -202,6 +205,34 @@ export default function App(): JSX.Element {
       window.scrollTo(0, scrollY);
     };
   }, [cartOpen]);
+
+  const handleGetLocation = (): void => {
+    setGeoLoading(true);
+    setGeoError("");
+
+    if (!navigator.geolocation) {
+      setGeoError("Seu navegador não suporta GPS. Ative a localização ou digite o endereço.");
+      setGeoLoading(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const mapsUrl = `https://www.google.com/maps?q=${position.coords.latitude},${position.coords.longitude}`;
+        setLocationLink(mapsUrl);
+        setGeoLoading(false);
+      },
+      (err) => {
+        const msg =
+          err?.code === 1
+            ? "Permissão negada. Ative a localização nas configurações do navegador e tente novamente."
+            : "Não foi possível obter sua localização. Ative a localização nas configurações do navegador e tente novamente.";
+        setGeoError(msg);
+        setGeoLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  };
 
   const openDirectionsToSitari = (): void => {
     const w = window.open("about:blank", "_blank");
@@ -1436,6 +1467,35 @@ export default function App(): JSX.Element {
                               className="sm:col-span-2 w-full bg-black/5 border border-red-500/20 rounded-xl px-4 py-3 text-sm focus:border-[#145a2c] outline-none"
                             />
                           </div>
+
+                          <div className="pt-1">
+                            <button
+                              type="button"
+                              onClick={handleGetLocation}
+                              disabled={geoLoading}
+                              className={`w-full py-3 rounded-2xl border font-black text-xs sm:text-sm flex items-center justify-center gap-3 transition-all ${
+                                locationLink
+                                  ? "bg-[#145a2c]/20 border-[#145a2c] text-black"
+                                  : "bg-black/5 border-red-500/20 text-black"
+                              } ${geoLoading ? "opacity-70" : ""}`}
+                            >
+                              <span>
+                                {locationLink
+                                  ? "✓ LOCALIZAÇÃO COMPARTILHADA"
+                                  : "📍 COMPARTILHAR LOCALIZAÇÃO ATUAL VIA GPS"}
+                              </span>
+                              {geoLoading && (
+                                <span className="text-black/60 text-[11px] font-bold">
+                                  Obtendo…
+                                </span>
+                              )}
+                            </button>
+                            {geoError && (
+                              <p className="mt-2 text-[11px] font-bold text-red-500/80">
+                                {geoError}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       )}
 
@@ -1567,6 +1627,7 @@ export default function App(): JSX.Element {
                               }?text=${encodeURIComponent(
                                 formatWhatsAppMessage(items as unknown as CartItem[], {
                                   addressParts: fulfillment === "Entrega" ? deliveryAddress : null,
+                                  locationLink: fulfillment === "Entrega" ? locationLink : "",
                                   customer,
                                   fulfillment,
                                   payment,
