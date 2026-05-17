@@ -867,20 +867,12 @@ export default function App(): JSX.Element {
               ))}
             </div>
             <p
-              className="text-[#145a2c] font-medium"
-              style={{
-                textShadow:
-                  "0 1px 0 rgba(255,255,255,0.85), 0 2px 0 rgba(255,255,255,0.55), 0 10px 18px rgba(0,0,0,0.35)",
-              }}
+              className="text-black font-medium"
             >
               {SITE_INFO.tagline}
             </p>
             <p
-              className="text-[#145a2c] text-sm mt-3"
-              style={{
-                textShadow:
-                  "0 1px 0 rgba(255,255,255,0.85), 0 2px 0 rgba(255,255,255,0.55), 0 10px 18px rgba(0,0,0,0.35)",
-              }}
+              className="text-black text-sm mt-3"
             >
               {SITE_INFO.intro.text}
             </p>
