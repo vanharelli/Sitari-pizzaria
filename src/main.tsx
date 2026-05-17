@@ -7,6 +7,11 @@ import { initLockdown } from "./logic/lockdown";
 
 initLockdown();
 
+document.documentElement.style.overflowY = "auto";
+document.body.style.overflowY = "auto";
+document.documentElement.style.touchAction = "auto";
+document.body.style.touchAction = "auto";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <App />
