@@ -594,21 +594,14 @@ export default function App(): JSX.Element {
     <div
       className="min-h-screen text-black font-sans selection:bg-[#145a2c]/20 relative overflow-x-hidden"
       style={{
-        backgroundImage: "url(/back3.avif?v=1)",
+        backgroundImage: "url(/background2.jpeg?v=2)",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",
       }}
     >
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          WebkitBackdropFilter: "blur(6px)",
-          backdropFilter: "blur(6px)",
-          background: "rgba(255,255,255,0.42)",
-        }}
-      />
+      <div className="absolute inset-0 bg-white/70 pointer-events-none" />
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-[10%] -left-[10%] w-[45%] h-[45%] bg-[#145a2c]/12 blur-[120px] rounded-full" />
         <div className="absolute top-[25%] -right-[10%] w-[35%] h-[35%] bg-[#145a2c]/8 blur-[130px] rounded-full" />
