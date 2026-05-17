@@ -50,7 +50,6 @@ export default function App() {
   });
   const mostOrderedScrollRef = useRef(null);
   const cartScrollRef = useRef(null);
-  const bottomSentinelRef = useRef(null);
   const mostOrderedCardRefs = useRef([]);
   const mostOrderedRafRef = useRef(0);
   const [mostOrderedActiveIndex, setMostOrderedActiveIndex] = useState(0);
@@ -486,47 +485,13 @@ export default function App() {
   }, [mostOrderedPizzas.length]);
 
   useEffect(() => {
-    let raf = 0;
-    const updateFromScroll = () => {
-      raf = 0;
-      const root = document.scrollingElement || document.documentElement;
-      const scrollTop = root.scrollTop || 0;
-      const scrollHeight = root.scrollHeight || 0;
-      const clientHeight = root.clientHeight || window.innerHeight || 0;
-      const atBottom = scrollTop + clientHeight >= scrollHeight - 40;
-      setHeaderActive(atBottom);
-    };
-
     const onScroll = () => {
-      if (raf) return;
-      raf = window.requestAnimationFrame(updateFromScroll);
+      setHeaderActive(window.scrollY > 8);
     };
-
-    const onResize = () => updateFromScroll();
-
-    updateFromScroll();
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onResize);
-
-    let observer = null;
-    const sentinel = bottomSentinelRef.current;
-    if (sentinel && "IntersectionObserver" in window) {
-      observer = new IntersectionObserver(
-        (entries) => {
-          const e = entries[0];
-          if (!e) return;
-          setHeaderActive(Boolean(e.isIntersecting));
-        },
-        { root: null, threshold: 0.01 }
-      );
-      observer.observe(sentinel);
-    }
-
     return () => {
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onResize);
-      if (raf) window.cancelAnimationFrame(raf);
-      if (observer) observer.disconnect();
     };
   }, []);
 
@@ -1090,7 +1055,6 @@ export default function App() {
             </div>
           </div>
         </div>
-        <div ref={bottomSentinelRef} className="h-px w-full" />
       </main>
 
       <AnimatePresence>
