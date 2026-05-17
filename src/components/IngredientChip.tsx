@@ -1,6 +1,12 @@
 import { motion } from "framer-motion";
 
-export function IngredientChip({ label, color, index }) {
+type Props = {
+  label: string;
+  color: string;
+  index: number;
+};
+
+export function IngredientChip({ label, color, index }: Props) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}

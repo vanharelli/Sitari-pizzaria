@@ -3,7 +3,26 @@ import { Plus } from "lucide-react";
 import { StarRating } from "./StarRating";
 import { getPizzaImage } from "../logic/menu";
 
-export function PizzaCard({ pizza, onSelect, sizeKey }) {
+type Pizza = {
+  id: number;
+  name: string;
+  category: string;
+  description: string;
+  glowColor: string;
+  tag: string;
+  tagColor: string;
+  rating: number;
+  sizes: Record<string, number>;
+  imageUrl?: string;
+};
+
+type Props = {
+  pizza: Pizza;
+  onSelect: (pizza: Pizza) => void;
+  sizeKey?: string;
+};
+
+export function PizzaCard({ pizza, onSelect, sizeKey }: Props) {
   const prices = Object.values(pizza.sizes ?? {}).filter(
     (v) => typeof v === "number" && Number.isFinite(v)
   );
@@ -25,7 +44,7 @@ export function PizzaCard({ pizza, onSelect, sizeKey }) {
           src={getPizzaImage(pizza)}
           alt={pizza.name}
           className="absolute inset-0 h-full w-full object-cover"
-          draggable="false"
+          draggable={false}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
         <div

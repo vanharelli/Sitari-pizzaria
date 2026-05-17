@@ -57,6 +57,12 @@ function guessColor(category: string) {
   return COLORS.accent;
 }
 
+function guessEmoji(category: string) {
+  if (category === "Bebidas") return "🥤";
+  if (category === "Doces") return "🍫";
+  return "🍕";
+}
+
 function buildIngredients(description: string) {
   const parts = description
     .replace(/\s+/g, " ")
@@ -129,6 +135,8 @@ function makePizza({
     name,
     category,
     description,
+    emoji: guessEmoji(category),
+    accentLight: glowColor,
     imageUrl: imageUrl || defaultImageUrl,
     glowColor,
     tag: category === "Doces" ? "Doce" : isDrink ? "Bebida" : "Salgada",

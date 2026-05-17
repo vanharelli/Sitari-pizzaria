@@ -1,6 +1,11 @@
 import { CATEGORIES } from "../logic/menu";
 
-export function CategoryFilter({ active, onChange }) {
+type Props = {
+  active: string;
+  onChange: (category: string) => void;
+};
+
+export function CategoryFilter({ active, onChange }: Props) {
   return (
     <div className="px-4 py-2 overflow-x-auto no-scrollbar flex gap-2">
       {CATEGORIES.filter((cat) => cat !== "Bebidas").map((cat) => (
