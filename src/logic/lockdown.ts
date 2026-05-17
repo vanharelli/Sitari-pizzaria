@@ -10,10 +10,6 @@ export function initLockdown(options: LockdownOptions = {}) {
     e.preventDefault();
   };
 
-  const onGesture = (e: Event) => {
-    e.preventDefault();
-  };
-
   const onKeyDown = (e: KeyboardEvent) => {
     const key = String(e.key || "").toLowerCase();
     const ctrl = e.ctrlKey || e.metaKey;
@@ -35,16 +31,4 @@ export function initLockdown(options: LockdownOptions = {}) {
 
   window.addEventListener("contextmenu", onContextMenu, { capture: true });
   window.addEventListener("keydown", onKeyDown, { capture: true });
-  window.addEventListener("gesturestart", onGesture as EventListener, {
-    capture: true,
-    passive: false,
-  });
-  window.addEventListener("gesturechange", onGesture as EventListener, {
-    capture: true,
-    passive: false,
-  });
-  window.addEventListener("gestureend", onGesture as EventListener, {
-    capture: true,
-    passive: false,
-  });
 }
