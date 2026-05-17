@@ -1445,23 +1445,12 @@ export default function App(): JSX.Element {
                               className="w-full bg-black/5 border border-red-500/20 rounded-xl px-4 py-3 text-sm focus:border-[#145a2c] outline-none"
                             />
                             <input
-                              placeholder="Complemento (opcional)"
+                              placeholder="Número da casa ou apt"
                               value={deliveryAddress.complement}
                               onChange={(e) =>
                                 setDeliveryAddress((prev) => ({
                                   ...prev,
                                   complement: e.target.value,
-                                }))
-                              }
-                              className="sm:col-span-2 w-full bg-black/5 border border-red-500/20 rounded-xl px-4 py-3 text-sm focus:border-[#145a2c] outline-none"
-                            />
-                            <input
-                              placeholder="Ponto de referência (opcional)"
-                              value={deliveryAddress.reference}
-                              onChange={(e) =>
-                                setDeliveryAddress((prev) => ({
-                                  ...prev,
-                                  reference: e.target.value,
                                 }))
                               }
                               className="sm:col-span-2 w-full bg-black/5 border border-red-500/20 rounded-xl px-4 py-3 text-sm focus:border-[#145a2c] outline-none"
@@ -1496,6 +1485,18 @@ export default function App(): JSX.Element {
                               </p>
                             )}
                           </div>
+
+                          <input
+                            placeholder="Nome do condomínio / residência / referência"
+                            value={deliveryAddress.reference}
+                            onChange={(e) =>
+                              setDeliveryAddress((prev) => ({
+                                ...prev,
+                                reference: e.target.value,
+                              }))
+                            }
+                            className="w-full bg-black/5 border border-red-500/20 rounded-xl px-4 py-3 text-sm focus:border-[#145a2c] outline-none"
+                          />
                         </div>
                       )}
 
