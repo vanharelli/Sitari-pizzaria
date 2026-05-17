@@ -9,8 +9,9 @@ body,
 html,
 body {
   overflow-x: hidden;
-  overscroll-behavior-y: none;
-  touch-action: pan-y;
+  overflow-y: auto;
+  overscroll-behavior-y: auto;
+  touch-action: auto;
   -webkit-text-size-adjust: 100%;
 }
 
