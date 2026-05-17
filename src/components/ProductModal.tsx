@@ -182,6 +182,12 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }: Props) {
     return flavorCandidates.filter((p) => p && p.id !== baseId);
   }, [flavorCandidates, baseId]);
 
+  const flavorCandidatesWithBase = useMemo(() => {
+    if (!baseId) return flavorCandidatesNoBase;
+    const basePizza = flavorsById.get(baseId) || pizza;
+    return [basePizza, ...flavorCandidatesNoBase];
+  }, [baseId, flavorCandidatesNoBase, flavorsById, pizza]);
+
   const selectFlavorAndAdvance = (id: number) => {
     const idx = pickFlavorIndex;
     setFlavorAtIndex(idx, id);
@@ -472,16 +478,19 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }: Props) {
               </div>
 
               <div className="max-h-[calc(86dvh-64px)] overflow-y-auto no-scrollbar p-3 space-y-2">
-                {flavorCandidatesNoBase.map((p) => {
+                {flavorCandidatesWithBase.map((p) => {
                   const selectedId = safeFlavorIds[pickFlavorIndex];
                   const isSelected = selectedId === p.id;
                   const isChosen = selectedFlavorIdSet.has(p.id);
+                  const isBase = p.id === baseId;
+                  const canSelect = !isBase;
                   return (
                     <button
                       key={p.id}
                       type="button"
-                      onClick={() => selectFlavorAndAdvance(p.id)}
-                      className="w-full text-left"
+                      onClick={canSelect ? () => selectFlavorAndAdvance(p.id) : undefined}
+                      disabled={!canSelect}
+                      className={`w-full text-left ${!canSelect ? "cursor-default" : ""}`}
                     >
                       <div
                         className={`relative overflow-hidden rounded-2xl border transition-all ${
@@ -502,7 +511,7 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }: Props) {
                           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/35 to-transparent" />
                           {(isSelected || isChosen) && (
                             <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-[#145a2c] text-white text-[10px] font-black shadow-[0_8px_18px_rgba(0,0,0,0.25)]">
-                              ✓ Selecionada
+                              ✓ Selecionada{isBase ? " (Sabor 1)" : ""}
                             </div>
                           )}
                           <div className="relative p-3">
