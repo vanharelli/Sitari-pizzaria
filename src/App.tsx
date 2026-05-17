@@ -669,7 +669,6 @@ export default function App(): JSX.Element {
           <img
             src="/logosemfundo1.png"
             alt="Sitari Pizzaria"
-            fetchPriority="high"
             loading="eager"
             decoding="sync"
             className="h-11 w-11 sm:h-12 sm:w-12 object-contain shrink-0"
@@ -787,7 +786,6 @@ export default function App(): JSX.Element {
             <img
               src="/logosemfundo1.png"
               alt="Sitari Pizzaria"
-              fetchPriority="high"
               loading="eager"
               decoding="sync"
               className="sm:hidden mx-auto h-24 w-24 object-contain drop-shadow-xl mb-4"
@@ -954,7 +952,6 @@ export default function App(): JSX.Element {
                         <img
                           src={pizza.imageUrl}
                           alt={pizza.name}
-                          fetchPriority="high"
                           loading="eager"
                           decoding="sync"
                           className="absolute inset-0 h-full w-full object-cover"
