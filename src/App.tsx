@@ -172,7 +172,8 @@ export default function App(): JSX.Element {
   }, [cartOpen]);
 
   useEffect(() => {
-    if (!cartOpen) return;
+    const scrollLockActive = cartOpen || Boolean(selectedPizza);
+    if (!scrollLockActive) return;
 
     const scrollY = window.scrollY || 0;
     const html = document.documentElement;
@@ -204,7 +205,7 @@ export default function App(): JSX.Element {
       body.style.width = prevBodyWidth;
       window.scrollTo(0, scrollY);
     };
-  }, [cartOpen]);
+  }, [cartOpen || Boolean(selectedPizza)]);
 
   const handleGetLocation = (): void => {
     setGeoLoading(true);

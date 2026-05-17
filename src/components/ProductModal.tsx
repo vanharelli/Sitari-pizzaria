@@ -336,24 +336,20 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }: Props) {
                         Sabores selecionados
                       </p>
                       <div className="mt-2 grid grid-cols-2 gap-1.5">
-                        {Array.from({ length: flavorsCount }).map((_, i) => {
+                        {Array.from({ length: flavorsCount }).flatMap((_, i) => {
                           const id = safeFlavorIds[i] || 0;
-                          const label =
-                            i === 0 ? pizza.name : flavorsById.get(id)?.name || "Escolher sabor";
+                          const label = i === 0 ? pizza.name : flavorsById.get(id)?.name || "";
                           const chosen = i === 0 ? true : id > 0;
                           const isActive = i === pickFlavorIndex;
+                          if (!chosen) return [];
 
                           if (i === 0) {
                             return (
                               <div
                                 key={i}
-                                className={`px-3 py-2 rounded-xl border font-black text-[11px] ${
-                                  chosen
-                                    ? "bg-[#145a2c]/10 border-[#145a2c]/70 text-black"
-                                    : "bg-black/5 border-red-500/20 text-black/60"
-                                }`}
+                                className="px-3 py-2 rounded-xl border font-black text-[11px] bg-[#145a2c]/15 border-[#145a2c] text-black shadow-[0_0_18px_rgba(20,90,44,0.20)]"
                               >
-                                <span className="text-black/50 font-black text-[10px] mr-2">
+                                <span className="text-black/55 font-black text-[10px] mr-2">
                                   Sabor 1
                                 </span>
                                 {label}
@@ -366,13 +362,11 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }: Props) {
                               key={i}
                               type="button"
                               onClick={() => openPickFlavorAt(i)}
-                              className={`px-3 py-2 rounded-xl border font-black text-[11px] text-left transition-all ${
-                                chosen
-                                  ? "bg-[#145a2c]/10 border-[#145a2c]/70 text-black"
-                                  : "bg-black/5 border-red-500/20 text-black/60"
-                              } ${isActive ? "ring-2 ring-[#145a2c]/20" : ""}`}
+                              className={`px-3 py-2 rounded-xl border font-black text-[11px] text-left transition-all bg-[#145a2c]/15 border-[#145a2c] text-black shadow-[0_0_18px_rgba(20,90,44,0.20)] ${
+                                isActive ? "ring-2 ring-[#145a2c]/35" : ""
+                              }`}
                             >
-                              <span className="text-black/50 font-black text-[10px] mr-2">
+                              <span className="text-black/55 font-black text-[10px] mr-2">
                                 Sabor {i + 1}
                               </span>
                               {label}
@@ -492,9 +486,9 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }: Props) {
                       <div
                         className={`relative overflow-hidden rounded-2xl border transition-all ${
                           isSelected
-                            ? "border-[#145a2c]/70 ring-2 ring-[#145a2c]/25"
+                            ? "border-[#145a2c] ring-4 ring-[#145a2c]/35 shadow-[0_0_24px_rgba(20,90,44,0.28)]"
                             : isChosen
-                              ? "border-[#145a2c]/60"
+                              ? "border-[#145a2c] ring-2 ring-[#145a2c]/25 shadow-[0_0_18px_rgba(20,90,44,0.20)]"
                               : "border-red-500/15 hover:border-red-500/30"
                         }`}
                       >
@@ -506,6 +500,11 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }: Props) {
                             draggable={false}
                           />
                           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/35 to-transparent" />
+                          {(isSelected || isChosen) && (
+                            <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-[#145a2c] text-white text-[10px] font-black shadow-[0_8px_18px_rgba(0,0,0,0.25)]">
+                              ✓ Selecionada
+                            </div>
+                          )}
                           <div className="relative p-3">
                             <div className="text-white font-black text-sm leading-tight">
                               {p.name}
