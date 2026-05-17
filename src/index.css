@@ -1,18 +1,35 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@keyframes sitariPulse {
-  0% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 0 rgba(20, 90, 44, 0));
-  }
-  50% {
-    transform: scale(1.03);
-    filter: drop-shadow(0 0 18px rgba(20, 90, 44, 0.55));
-  }
-  100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 0 rgba(20, 90, 44, 0));
-  }
+html,
+body,
+#root {
+  min-height: 100dvh;
+}
+
+html,
+body {
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
+  touch-action: pan-y;
+  -webkit-text-size-adjust: 100%;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input,
+textarea {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+img {
+  pointer-events: none;
+  -webkit-user-drag: none;
 }
