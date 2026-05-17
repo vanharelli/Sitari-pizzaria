@@ -96,6 +96,14 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }: Props) {
       .filter((p): p is Pizza => Boolean(p));
   }, [safeFlavorIds, flavorsCount, flavorsById]);
 
+  const selectedFlavorIdSet = useMemo(() => {
+    const ids = safeFlavorIds
+      .slice(0, flavorsCount)
+      .map((id) => Number(id || 0))
+      .filter((id) => id > 0);
+    return new Set<number>(ids);
+  }, [safeFlavorIds, flavorsCount]);
+
   const setFlavorsCountSafe = (next: number) => {
     const n = Math.max(1, Math.min(4, Number(next) || 1));
     setFlavorsCount(n);
@@ -120,6 +128,13 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }: Props) {
 
       return slots;
     });
+  };
+
+  const openPickFlavorAt = (index: number) => {
+    if (flavorsCount <= 1) return;
+    const idx = Math.max(1, Math.min(flavorsCount - 1, Number(index) || 1));
+    setPickFlavorIndex(idx);
+    setStep(3);
   };
 
   const setFlavorAtIndex = (index: number, nextId: number) => {
@@ -315,6 +330,59 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }: Props) {
 
                   <p className="text-black/60 text-[11px] font-bold">Escolha de 1 a 4 sabores.</p>
 
+                  {flavorsCount > 1 && (
+                    <div className="pt-1">
+                      <p className="text-[10px] font-bold text-black/30 uppercase tracking-widest">
+                        Sabores selecionados
+                      </p>
+                      <div className="mt-2 grid grid-cols-2 gap-1.5">
+                        {Array.from({ length: flavorsCount }).map((_, i) => {
+                          const id = safeFlavorIds[i] || 0;
+                          const label =
+                            i === 0 ? pizza.name : flavorsById.get(id)?.name || "Escolher sabor";
+                          const chosen = i === 0 ? true : id > 0;
+                          const isActive = i === pickFlavorIndex;
+
+                          if (i === 0) {
+                            return (
+                              <div
+                                key={i}
+                                className={`px-3 py-2 rounded-xl border font-black text-[11px] ${
+                                  chosen
+                                    ? "bg-[#145a2c]/10 border-[#145a2c]/70 text-black"
+                                    : "bg-black/5 border-red-500/20 text-black/60"
+                                }`}
+                              >
+                                <span className="text-black/50 font-black text-[10px] mr-2">
+                                  Sabor 1
+                                </span>
+                                {label}
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => openPickFlavorAt(i)}
+                              className={`px-3 py-2 rounded-xl border font-black text-[11px] text-left transition-all ${
+                                chosen
+                                  ? "bg-[#145a2c]/10 border-[#145a2c]/70 text-black"
+                                  : "bg-black/5 border-red-500/20 text-black/60"
+                              } ${isActive ? "ring-2 ring-[#145a2c]/20" : ""}`}
+                            >
+                              <span className="text-black/50 font-black text-[10px] mr-2">
+                                Sabor {i + 1}
+                              </span>
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     onClick={() => setStep(1)}
                     className="w-full py-2 rounded-2xl bg-white border border-red-500/20 text-black font-black text-xs"
@@ -413,6 +481,7 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }: Props) {
                 {flavorCandidatesNoBase.map((p) => {
                   const selectedId = safeFlavorIds[pickFlavorIndex];
                   const isSelected = selectedId === p.id;
+                  const isChosen = selectedFlavorIdSet.has(p.id);
                   return (
                     <button
                       key={p.id}
@@ -424,7 +493,9 @@ export function ProductModal({ pizza, allPizzas = [], onClose, onAdd }: Props) {
                         className={`relative overflow-hidden rounded-2xl border transition-all ${
                           isSelected
                             ? "border-[#145a2c]/70 ring-2 ring-[#145a2c]/25"
-                            : "border-red-500/15 hover:border-red-500/30"
+                            : isChosen
+                              ? "border-[#145a2c]/60"
+                              : "border-red-500/15 hover:border-red-500/30"
                         }`}
                       >
                         <div className="relative h-[92px]">
