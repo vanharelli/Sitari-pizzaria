@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronDown,
@@ -50,8 +50,7 @@ export default function App() {
   });
   const mostOrderedScrollRef = useRef(null);
   const cartScrollRef = useRef(null);
-  const headerRef = useRef(null);
-  const [headerHeight, setHeaderHeight] = useState(0);
+  const bottomSentinelRef = useRef(null);
   const mostOrderedCardRefs = useRef([]);
   const mostOrderedRafRef = useRef(0);
   const [mostOrderedActiveIndex, setMostOrderedActiveIndex] = useState(0);
@@ -382,19 +381,63 @@ export default function App() {
     if (prefersReduced) return;
 
     let raf = 0;
-    const speed = 0.35;
-    const step = () => {
+    let resumeId = 0;
+    let paused = false;
+    let lastAutoMoveAt = 0;
+    const speed = 0.28;
+
+    const stop = () => {
+      if (raf) window.cancelAnimationFrame(raf);
+      raf = 0;
+    };
+
+    const start = () => {
+      if (raf || paused) return;
+      raf = window.requestAnimationFrame(tick);
+    };
+
+    const pauseFor = (ms) => {
+      paused = true;
+      stop();
+      if (resumeId) window.clearTimeout(resumeId);
+      resumeId = window.setTimeout(() => {
+        paused = false;
+        start();
+      }, ms);
+    };
+
+    const tick = () => {
       const node = mostOrderedScrollRef.current;
       if (!node) return;
       const max = node.scrollWidth - node.clientWidth;
       if (max > 0) {
+        lastAutoMoveAt = performance.now();
         node.scrollLeft += speed;
         if (node.scrollLeft >= max - 1) node.scrollLeft = 0;
       }
-      raf = window.requestAnimationFrame(step);
+      raf = window.requestAnimationFrame(tick);
     };
-    raf = window.requestAnimationFrame(step);
-    return () => window.cancelAnimationFrame(raf);
+
+    const onUserIntent = () => pauseFor(2600);
+    const onScroll = () => {
+      const now = performance.now();
+      if (now - lastAutoMoveAt > 120) pauseFor(2600);
+    };
+
+    el.addEventListener("wheel", onUserIntent, { passive: true });
+    el.addEventListener("touchstart", onUserIntent, { passive: true });
+    el.addEventListener("pointerdown", onUserIntent, { passive: true });
+    el.addEventListener("scroll", onScroll, { passive: true });
+
+    start();
+    return () => {
+      el.removeEventListener("wheel", onUserIntent);
+      el.removeEventListener("touchstart", onUserIntent);
+      el.removeEventListener("pointerdown", onUserIntent);
+      el.removeEventListener("scroll", onScroll);
+      stop();
+      if (resumeId) window.clearTimeout(resumeId);
+    };
   }, []);
 
   useEffect(() => {
@@ -443,28 +486,53 @@ export default function App() {
   }, [mostOrderedPizzas.length]);
 
   useEffect(() => {
-    const onScroll = () => {
-      const doc = document.documentElement;
-      const atBottom = window.innerHeight + window.scrollY >= doc.scrollHeight - 40;
+    let raf = 0;
+    const updateFromScroll = () => {
+      raf = 0;
+      const root = document.scrollingElement || document.documentElement;
+      const scrollTop = root.scrollTop || 0;
+      const scrollHeight = root.scrollHeight || 0;
+      const clientHeight = root.clientHeight || window.innerHeight || 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 40;
       setHeaderActive(atBottom);
     };
-    onScroll();
+
+    const onScroll = () => {
+      if (raf) return;
+      raf = window.requestAnimationFrame(updateFromScroll);
+    };
+
+    const onResize = () => updateFromScroll();
+
+    updateFromScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onResize);
+
+    let observer = null;
+    const sentinel = bottomSentinelRef.current;
+    if (sentinel && "IntersectionObserver" in window) {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const e = entries[0];
+          if (!e) return;
+          setHeaderActive(Boolean(e.isIntersecting));
+        },
+        { root: null, threshold: 0.01 }
+      );
+      observer.observe(sentinel);
+    }
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onResize);
+      if (raf) window.cancelAnimationFrame(raf);
+      if (observer) observer.disconnect();
+    };
   }, []);
 
   useEffect(() => {
     if (!headerActive) setHoursOpen(false);
   }, [headerActive]);
-
-  useLayoutEffect(() => {
-    const node = headerRef.current;
-    if (!node) return;
-    const update = () => setHeaderHeight(node.offsetHeight || 0);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
 
   useEffect(() => {
     const node = cartScrollRef.current;
@@ -491,7 +559,6 @@ export default function App() {
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
         backgroundAttachment: "fixed",
-        "--sitari-header-h": `${headerActive ? headerHeight : 0}px`,
       }}
     >
       <div
@@ -512,7 +579,6 @@ export default function App() {
       </div>
 
       <header
-        ref={headerRef}
         className={`fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-2xl border-b border-red-500/40 px-6 py-4 flex items-center transition-all duration-200 ${
           headerActive
             ? "opacity-100 translate-y-0 pointer-events-auto shadow-sm"
@@ -646,7 +712,7 @@ export default function App() {
 
       </header>
 
-      <main className="relative z-10 pb-32 pt-[var(--sitari-header-h)]">
+      <main className="relative z-10 pb-32">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 lg:pr-28 py-8">
           <div className="mb-10">
             <img
@@ -1024,6 +1090,7 @@ export default function App() {
             </div>
           </div>
         </div>
+        <div ref={bottomSentinelRef} className="h-px w-full" />
       </main>
 
       <AnimatePresence>

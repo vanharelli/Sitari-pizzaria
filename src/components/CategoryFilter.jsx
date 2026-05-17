@@ -10,7 +10,7 @@ export function CategoryFilter({ active, onChange }) {
           className={`px-5 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
             active === cat
               ? "bg-[#145a2c] text-white"
-              : "bg-white/80 border border-red-500/20 text-white"
+              : "bg-black/5 border border-red-500/20 text-white/85"
           }`}
         >
           {cat}
