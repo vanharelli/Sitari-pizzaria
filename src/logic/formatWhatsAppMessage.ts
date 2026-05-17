@@ -15,6 +15,7 @@ type Options = {
   address?: string;
   addressParts?: AddressParts | null;
   locationLink?: string;
+  orderNumber?: number | string;
   customer?: Customer | null;
   couponCode?: string;
   discount?: number;
@@ -45,13 +46,20 @@ export function formatWhatsAppMessage(
   const address = typeof addressOrOptions === "string" ? addressOrOptions : options.address || "";
   const addressParts = options.addressParts || null;
   const locationLink = String(options.locationLink || "").trim();
+  const orderNumberRaw = options.orderNumber;
+  const orderNumber =
+    orderNumberRaw === 0 || orderNumberRaw
+      ? String(orderNumberRaw).trim()
+      : "";
   const customer = options.customer || null;
   const couponCode = options.couponCode || "";
   const discount = Number(options.discount || 0);
 
   const formatBRL = (v: number) => `R$ ${Number(v || 0).toFixed(2).replace(".", ",")}`;
 
-  const lines = ["🍕 *NOVO PEDIDO - SITARI PIZZARIA*", "━━━━━━━━━━━━━━━━━━━━━━━━━━", ""];
+  const lines = ["🍕 *NOVO PEDIDO - SITARI PIZZARIA*"];
+  if (orderNumber) lines.push(`🧾 *NÚMERO DO PEDIDO:* ${orderNumber}`);
+  lines.push("━━━━━━━━━━━━━━━━━━━━━━━━━━", "");
 
   let total = 0;
   items.forEach((item, i) => {

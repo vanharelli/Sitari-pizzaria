@@ -210,6 +210,16 @@ export default function App(): JSX.Element {
     setGeoLoading(true);
     setGeoError("");
 
+    const host = window.location.hostname;
+    const isLocalhost = host === "localhost" || host === "127.0.0.1";
+    if (!window.isSecureContext && !isLocalhost) {
+      setGeoError(
+        "Para compartilhar GPS, abra o site em HTTPS (link oficial) ou em localhost. No preview por IP, o navegador bloqueia a localização."
+      );
+      setGeoLoading(false);
+      return;
+    }
+
     if (!navigator.geolocation) {
       setGeoError("Seu navegador não suporta GPS. Ative a localização ou digite o endereço.");
       setGeoLoading(false);
@@ -1611,12 +1621,24 @@ export default function App(): JSX.Element {
                           }
                           onClick={() =>
                             (() => {
+                              const nextOrderNumber = (() => {
+                                try {
+                                  const current = Number(
+                                    localStorage.getItem("sitari_orders_count") || "0"
+                                  );
+                                  const n = Number.isFinite(current) ? current + 1 : 1;
+                                  return n;
+                                } catch {
+                                  return "";
+                                }
+                              })();
                               const url = `https://wa.me/${
                                 SITE_INFO.whatsappDigits
                               }?text=${encodeURIComponent(
                                 formatWhatsAppMessage(items as unknown as CartItem[], {
                                   addressParts: fulfillment === "Entrega" ? deliveryAddress : null,
                                   locationLink: fulfillment === "Entrega" ? locationLink : "",
+                                  orderNumber: nextOrderNumber,
                                   customer,
                                   fulfillment,
                                   payment,
