@@ -702,16 +702,15 @@ export default function App(): JSX.Element {
           <div className="relative inline-block">
             <button
               onClick={() => setHoursOpen((v) => !v)}
-              className={`px-4 py-2 rounded-full bg-white border text-xs font-black flex items-center gap-2 shadow-sm ${
-                status.isOpen ? "border-[#145a2c]" : "border-red-500"
-              }`}
+              className="p-2 rounded-full bg-white border border-transparent shadow-sm"
             >
               <span
-                className={`w-2 h-2 rounded-full ${
-                  status.isOpen ? "bg-[#145a2c]" : "bg-red-500"
-                }`}
+                className="w-2.5 h-2.5 rounded-full animate-pulse"
+                style={{
+                  backgroundColor: "#39ff14",
+                  boxShadow: "0 0 10px rgba(57,255,20,0.9), 0 0 22px rgba(57,255,20,0.45)",
+                }}
               />
-              {status.isOpen ? "ONLINE" : "FECHADO"}
             </button>
 
             <AnimatePresence>
@@ -1493,6 +1492,28 @@ export default function App(): JSX.Element {
                             }
                             className="w-full bg-black/5 border border-red-500/20 rounded-xl px-4 py-3 text-sm focus:border-[#145a2c] outline-none"
                           />
+
+                          <div className="grid grid-cols-2 gap-2">
+                            {["Guara 1", "Guara 2"].map((opt) => (
+                              <button
+                                key={opt}
+                                type="button"
+                                onClick={() =>
+                                  setDeliveryAddress((prev) => ({
+                                    ...prev,
+                                    neighborhood: opt,
+                                  }))
+                                }
+                                className={`py-3 rounded-xl border font-black text-xs transition-all ${
+                                  deliveryAddress.neighborhood === opt
+                                    ? "bg-[#145a2c]/20 border-[#145a2c] text-black"
+                                    : "bg-black/5 border-red-500/20 text-black/60"
+                                }`}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       )}
 
@@ -1615,7 +1636,8 @@ export default function App(): JSX.Element {
                             (fulfillment === "Entrega" &&
                               (!deliveryAddress.street.trim() ||
                                 !deliveryAddress.number.trim() ||
-                                !deliveryAddress.neighborhood.trim()))
+                                !deliveryAddress.neighborhood.trim() ||
+                                !locationLink.trim()))
                           }
                           onClick={() =>
                             (() => {
@@ -1660,7 +1682,8 @@ export default function App(): JSX.Element {
                               : fulfillment === "Entrega" &&
                                   (!deliveryAddress.street.trim() ||
                                     !deliveryAddress.number.trim() ||
-                                    !deliveryAddress.neighborhood.trim())
+                                    !deliveryAddress.neighborhood.trim() ||
+                                    !locationLink.trim())
                                 ? "bg-black/10 text-black/40"
                                 : "bg-[#145a2c] text-white"
                           }`}
@@ -1668,6 +1691,11 @@ export default function App(): JSX.Element {
                           <Phone size={20} /> WhatsApp
                         </button>
                       </div>
+                      {fulfillment === "Entrega" && !locationLink.trim() && (
+                        <p className="mt-3 text-[11px] font-black text-red-500/80">
+                          Compartilhe a localização atual via GPS para finalizar.
+                        </p>
+                      )}
                     </div>
                   </>
                 )}
