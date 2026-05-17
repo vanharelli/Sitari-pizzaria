@@ -10,26 +10,10 @@ export function initLockdown(options: LockdownOptions = {}) {
     e.preventDefault();
   };
 
-  let lastTouchY = 0;
-  const onTouchStart = (e: TouchEvent) => {
-    if (e.touches.length !== 1) return;
-    lastTouchY = e.touches[0]?.clientY ?? 0;
-  };
-
   const onTouchMove = (e: TouchEvent) => {
     if (e.touches.length > 1) {
       e.preventDefault();
       return;
-    }
-    if (e.touches.length !== 1) return;
-    const y = e.touches[0]?.clientY ?? 0;
-    const dy = y - lastTouchY;
-    lastTouchY = y;
-
-    const root = document.scrollingElement || document.documentElement;
-    const atTop = (root.scrollTop || 0) <= 0;
-    if (atTop && dy > 0) {
-      e.preventDefault();
     }
   };
 
@@ -58,7 +42,6 @@ export function initLockdown(options: LockdownOptions = {}) {
 
   window.addEventListener("contextmenu", onContextMenu, { capture: true });
   window.addEventListener("keydown", onKeyDown, { capture: true });
-  window.addEventListener("touchstart", onTouchStart, { capture: true, passive: true });
   window.addEventListener("touchmove", onTouchMove, { capture: true, passive: false });
   window.addEventListener("gesturestart", onGesture as EventListener, {
     capture: true,
