@@ -829,19 +829,19 @@ export default function App(): JSX.Element {
               ))}
             </div>
             <p
-              className="text-white/80 font-medium"
+              className="text-[#145a2c] font-medium"
               style={{
                 textShadow:
-                  "0 1px 0 rgba(0,0,0,0.55), 0 2px 0 rgba(0,0,0,0.40), 0 10px 18px rgba(0,0,0,0.35)",
+                  "0 1px 0 rgba(255,255,255,0.85), 0 2px 0 rgba(255,255,255,0.55), 0 10px 18px rgba(0,0,0,0.35)",
               }}
             >
               {SITE_INFO.tagline}
             </p>
             <p
-              className="text-white/70 text-sm mt-3"
+              className="text-[#145a2c] text-sm mt-3"
               style={{
                 textShadow:
-                  "0 1px 0 rgba(0,0,0,0.55), 0 2px 0 rgba(0,0,0,0.40), 0 10px 18px rgba(0,0,0,0.35)",
+                  "0 1px 0 rgba(255,255,255,0.85), 0 2px 0 rgba(255,255,255,0.55), 0 10px 18px rgba(0,0,0,0.35)",
               }}
             >
               {SITE_INFO.intro.text}
