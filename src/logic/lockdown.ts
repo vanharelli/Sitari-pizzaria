@@ -10,13 +10,6 @@ export function initLockdown(options: LockdownOptions = {}) {
     e.preventDefault();
   };
 
-  const onTouchMove = (e: TouchEvent) => {
-    if (e.touches.length > 1) {
-      e.preventDefault();
-      return;
-    }
-  };
-
   const onGesture = (e: Event) => {
     e.preventDefault();
   };
@@ -42,7 +35,6 @@ export function initLockdown(options: LockdownOptions = {}) {
 
   window.addEventListener("contextmenu", onContextMenu, { capture: true });
   window.addEventListener("keydown", onKeyDown, { capture: true });
-  window.addEventListener("touchmove", onTouchMove, { capture: true, passive: false });
   window.addEventListener("gesturestart", onGesture as EventListener, {
     capture: true,
     passive: false,
