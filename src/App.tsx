@@ -875,14 +875,10 @@ export default function App(): JSX.Element {
                 </svg>
               ))}
             </div>
-            <p
-              className="text-black font-medium"
-            >
+            <p className="text-black font-bold">
               {SITE_INFO.tagline}
             </p>
-            <p
-              className="text-black text-sm mt-3"
-            >
+            <p className="text-black text-sm mt-3 font-bold">
               {SITE_INFO.intro.text}
             </p>
             <p className="text-black text-sm mt-4 font-bold sitari-shimmer">
