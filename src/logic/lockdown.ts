@@ -3,7 +3,7 @@ type LockdownOptions = {
 };
 
 export function initLockdown(options: LockdownOptions = {}) {
-  const enabled = options.enabled ?? import.meta.env.PROD;
+  const enabled = options.enabled ?? true;
   if (!enabled) return;
 
   const onContextMenu = (e: MouseEvent) => {
@@ -18,6 +18,9 @@ export function initLockdown(options: LockdownOptions = {}) {
     const blocked =
       key === "f12" ||
       (ctrl && key === "u") ||
+      (ctrl && key === "c") ||
+      (ctrl && key === "s") ||
+      (ctrl && key === "p") ||
       (ctrl && shift && (key === "i" || key === "j" || key === "c"));
 
     if (blocked) {
