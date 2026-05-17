@@ -1251,7 +1251,7 @@ export default function App(): JSX.Element {
                             className="mt-3 w-full rounded-2xl overflow-hidden border border-red-500/20 bg-black relative text-left"
                           >
                             <img
-                              src={getPizzaImage(drinkOptions[0] ?? null)}
+                              src="/bebidas.png"
                               alt="Bebidas"
                               className="absolute inset-0 h-full w-full object-cover"
                               draggable={false}
