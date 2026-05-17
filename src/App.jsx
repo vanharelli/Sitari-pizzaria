@@ -13,7 +13,6 @@ import {
   Star,
   X,
 } from "lucide-react";
-import { CategoryFilter } from "./components/CategoryFilter";
 import { PizzaCard } from "./components/PizzaCard";
 import { ProductModal } from "./components/ProductModal";
 import { useCart } from "./logic/useCart";
@@ -27,7 +26,6 @@ import { PromotionPopup } from "./components/PromotionPopup";
 import { formatWhatsAppMessage } from "./logic/formatWhatsAppMessage";
 
 export default function App() {
-  const [category, setCategory] = useState("Todas");
   const [selectedPizza, setSelectedPizza] = useState(null);
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutStep, setCheckoutStep] = useState(1);
@@ -92,10 +90,8 @@ export default function App() {
   const drinkOptions = PIZZAS.filter((p) => p.category === "Bebidas").sort(
     (a, b) => String(a.name).localeCompare(String(b.name))
   );
-  const filtered =
-    category === "Todas"
-      ? visiblePizzas
-      : visiblePizzas.filter((p) => p.category === category);
+  const salgadasPizzas = visiblePizzas.filter((p) => p.category === "Salgadas");
+  const docesPizzas = visiblePizzas.filter((p) => p.category === "Doces");
 
   const destinationLat = SITE_INFO.google?.location?.lat;
   const destinationLng = SITE_INFO.google?.location?.lng;
@@ -529,13 +525,9 @@ export default function App() {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          WebkitBackdropFilter: `blur(${category === "Salgadas" ? 10 : 6}px)`,
-          backdropFilter: `blur(${category === "Salgadas" ? 10 : 6}px)`,
-          background:
-            category === "Salgadas"
-              ? "rgba(255,255,255,0.45)"
-              : "rgba(255,255,255,0.42)",
-          transition: "backdrop-filter 220ms ease, background 220ms ease",
+          WebkitBackdropFilter: "blur(6px)",
+          backdropFilter: "blur(6px)",
+          background: "rgba(255,255,255,0.42)",
         }}
       />
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
@@ -771,8 +763,24 @@ export default function App() {
                 </svg>
               ))}
             </div>
-            <p className="text-white/80 font-medium">{SITE_INFO.tagline}</p>
-            <p className="text-white/70 text-sm mt-3">{SITE_INFO.intro.text}</p>
+            <p
+              className="text-white/80 font-medium"
+              style={{
+                textShadow:
+                  "0 1px 0 rgba(0,0,0,0.55), 0 2px 0 rgba(0,0,0,0.40), 0 10px 18px rgba(0,0,0,0.35)",
+              }}
+            >
+              {SITE_INFO.tagline}
+            </p>
+            <p
+              className="text-white/70 text-sm mt-3"
+              style={{
+                textShadow:
+                  "0 1px 0 rgba(0,0,0,0.55), 0 2px 0 rgba(0,0,0,0.40), 0 10px 18px rgba(0,0,0,0.35)",
+              }}
+            >
+              {SITE_INFO.intro.text}
+            </p>
             <p className="text-black text-sm mt-4 font-bold sitari-shimmer">
               {SITE_INFO.intro.promo}
             </p>
@@ -888,19 +896,41 @@ export default function App() {
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 lg:pr-28 -mt-2">
-          <CategoryFilter active={category} onChange={setCategory} />
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 lg:pr-28 mt-8">
+          <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">
+            Cardápio
+          </p>
+          <h3 className="text-lg font-black text-white mt-1">PIZZAS SALGADAS</h3>
+        </div>
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 lg:pr-28">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
+            {salgadasPizzas.map((pizza) => (
+              <PizzaCard
+                key={pizza.id}
+                pizza={pizza}
+                onSelect={setSelectedPizza}
+              />
+            ))}
+          </div>
         </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-6">
-          {filtered.map((pizza) => (
-            <PizzaCard
-              key={pizza.id}
-              pizza={pizza}
-              onSelect={setSelectedPizza}
-            />
-          ))}
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 lg:pr-28 mt-10">
+          <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">
+            Cardápio
+          </p>
+          <h3 className="text-lg font-black text-white mt-1">PIZZAS DOCES</h3>
+        </div>
+        <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-10 lg:pr-28">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
+            {docesPizzas.map((pizza) => (
+              <PizzaCard
+                key={pizza.id}
+                pizza={pizza}
+                onSelect={setSelectedPizza}
+              />
+            ))}
           </div>
+        </div>
 
           <div className="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="hidden rounded-2xl bg-white/80 border border-red-500/20 p-6 shadow-sm">
